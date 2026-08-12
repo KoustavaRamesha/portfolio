@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KV — Terminal Portfolio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508;
+    --term-bg: #0d0d14;
+    --term-border: #1f1f2e;
+    --green: #00ff9f;
+    --cyan: #00e5ff;
+    --pink: #ff2e6f;
+    --yellow: #ffd23f;
+    --text-dim: #9a9aaf; 
+    --text: #e0e0e0;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
+  body { font-family: 'JetBrains Mono', monospace; color: var(--text); cursor: text; }
+  ::selection { background: var(--green); color: var(--bg); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--term-bg); }
+  ::-webkit-scrollbar-thumb { background: var(--term-border); border-radius: 3px; }
+
+  /* CRT Effects */
+  .crt-overlay {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.03));
+    background-size: 100% 3px, 3px 100%;
+  }
+  .crt-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 99;
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+  }
+
+  /* Boot Screen */
+  #bootScreen {
+    position: fixed; inset: 0; z-index: 9999; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 2rem;
+    transition: opacity 0.5s;
+  }
+  #bootScreen.fade-out { opacity: 0; pointer-events: none; }
+  .boot-line { opacity: 0; animation: fadeIn 0.3s forwards; margin-bottom: 0.5rem; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .boot-bar { width: 300px; height: 10px; border: 1px solid var(--term-border); margin-top: 1rem; overflow: hidden; }
+  .boot-bar-fill { height: 100%; width: 0%; background: var(--green); transition: width 0.3s; box-shadow: 0 0 10px var(--green); }
+
+  /* Terminal Layout */
+  #terminalApp { height: 100vh; padding: 1rem; position: relative; z-index: 10; }
+  .layout-grid { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; min-height: 0; }
+  .term-window { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; min-width: 0; }
+  .term-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: var(--term-border); border-radius: 8px 8px 0 0; border: 1px solid #2a2a3a; }
+  .term-dots { display: flex; gap: 0.5rem; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-title { font-size: 0.8rem; color: var(--text-dim); letter-spacing: 0.05em; }
+  
+  .term-body { 
+    flex: 1; background: var(--term-bg); border: 1px solid #2a2a3a; border-top: none; border-radius: 0 0 8px 8px; 
+    padding: 1.5rem; overflow-y: auto; font-size: 1rem; line-height: 1.6; position: relative; 
+    display: flex; flex-direction: column;
+  }
+  #outputArea { flex: 1; }
+  .term-line { margin-bottom: 0.5rem; white-space: pre-wrap; word-break: break-word; }
+  
+  .input-area { display: flex; align-items: center; padding-top: 0.5rem; border-top: 1px solid #2a2a3a; margin-top: 1rem; }
+  .prompt { color: var(--green); margin-right: 0.5rem; white-space: nowrap; }
+  .cmd-input { background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: inherit; width: 100%; caret-color: var(--green); }
+  .cmd-input:disabled { opacity: 0.5; }
+  
+  /* Quick Links */
+  .quick-links { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 1rem; border-top: 1px dashed #2a2a3a; margin-top: 1rem; }
+  .q-link { padding: 0.25rem 0.5rem; border: 1px solid #2a2a3a; border-radius: 4px; font-size: 0.75rem; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+  .q-link:hover { border-color: var(--green); color: var(--green); background: rgba(0, 255, 159, 0.1); }
+  .mode-hint { font-size: 0.75rem; color: var(--yellow); margin-top: 0.5rem; text-align: center; display: none; }
+
+  /* Links & Components */
+  .term-link { color: var(--cyan); text-decoration: underline; cursor: pointer; margin-right: 1rem; }
+  .term-link:hover { color: var(--green); }
+  .glitch { position: relative; display: inline-block; color: var(--pink); font-weight: bold; }
+  .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; }
+  .glitch::before { animation: glitch-1 2s infinite linear alternate-reverse; color: var(--cyan); z-index: -1; }
+  .glitch::after { animation: glitch-2 3s infinite linear alternate-reverse; color: var(--green); z-index: -2; }
+  @keyframes glitch-1 { 0% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 20% { clip-path: inset(80% 0 5% 0); transform: translate(2px,0); } 40% { clip-path: inset(40% 0 40% 0); transform: translate(-1px,0); } 60% { clip-path: inset(10% 0 80% 0); transform: translate(1px,0); } 80% { clip-path: inset(60% 0 20% 0); transform: translate(-2px,0); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(2px,0); } }
+  @keyframes glitch-2 { 0% { clip-path: inset(70% 0 10% 0); transform: translate(2px,0); } 20% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 40% { clip-path: inset(60% 0 30% 0); transform: translate(1px,0); } 60% { clip-path: inset(30% 0 70% 0); transform: translate(-1px,0); } 80% { clip-path: inset(10% 0 80% 0); transform: translate(2px,0); } 100% { clip-path: inset(80% 0 5% 0); transform: translate(-2px,0); } }
+
+  .stat-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .stat-bar { flex: 1; height: 8px; background: var(--term-border); border-radius: 4px; overflow: hidden; }
+  .stat-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); box-shadow: 0 0 5px var(--green); }
+
+  @keyframes renderIn { from { opacity: 0; transform: translateY(10px); filter: blur(3px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  .render-anim { animation: renderIn 0.3s ease forwards; }
+
+  /* Optimized Grid for Full Screen */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .term-card { background: var(--term-border); border: 1px solid #2a2a3a; padding: 1.25rem; border-radius: 6px; transition: all 0.3s; }
+  .term-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+  
+  /* Skill Tags */
+  .skill-tag { 
+    display: inline-block; 
+    background: rgba(255, 255, 255, 0.05); 
+    border: 1px solid #2a2a3a; 
+    color: var(--text); 
+    padding: 0.3rem 0.6rem; 
+    border-radius: 4px; 
+    font-size: 0.85rem; 
+    margin: 0.2rem; 
+  }
+
+  /* Duck Chat */
+  .chat-box { background: var(--term-border); border: 1px solid #2a2a3a; border-radius: 6px; overflow: hidden; margin: 1rem 0; display: flex; flex-direction: column; max-height: 400px; }
+  .chat-header { background: var(--term-bg); padding: 0.5rem 1rem; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .close-chat-btn { color: var(--pink); cursor: pointer; font-weight: bold; border: 1px solid var(--pink); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+  .close-chat-btn:hover { background: var(--pink); color: var(--bg); }
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .chat-msg { max-width: 80%; padding: 0.5rem 0.8rem; border-radius: 4px; font-size: 0.85rem; }
+  .msg-duck { background: var(--term-bg); border: 1px solid #2a2a3a; align-self: flex-start; border-left: 2px solid var(--yellow); }
+  .msg-user { background: var(--green); color: var(--bg); align-self: flex-end; font-weight: bold; }
+  .typing span { display: inline-block; width: 5px; height: 5px; background: var(--text-dim); border-radius: 50%; margin: 0 1px; animation: bounce 1s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.15s; } .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+  /* Duck Quick Replies */
+  .quick-replies { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; border-top: 1px solid #2a2a3a; background: var(--term-bg); flex-shrink: 0; }
+  .duck-quick-btn { background: var(--term-border); border: 1px solid #2a2a3a; color: var(--text-dim); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+  .duck-quick-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+  /* Mascot SVG */
+  .duck-waddle { animation: waddle 1.2s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
+  @keyframes waddle { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+  .duck-blink { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+
+  /* Rotating quote banner (terminal-style typewriter effect) */
+  .quote-banner { min-height: 9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 0.5rem; }
+  .quote-banner .q-line, .quote-banner .q-sub-line { display: flex; align-items: baseline; justify-content: center; }
+  .quote-banner .q-prompt { color: var(--green); margin-right: 0.5rem; font-size: 3.4rem; }
+  .quote-banner .q-main { font-size: 3.4rem; font-weight: 700; letter-spacing: 0.03em; word-break: break-word; }
+  .quote-banner .q-sub { font-size: 1.7rem; color: var(--text-dim); font-style: italic; margin-top: 0.5rem; word-break: break-word; }
+  .quote-banner .q-cursor { display: inline-block; width: 0.5em; height: 1.5rem; background: var(--green); margin-left: 3px; box-shadow: 0 0 8px var(--green); animation: cursor-blink 0.9s steps(1) infinite; flex-shrink: 0; }
+  .quote-banner .q-sub-line .q-cursor { height: 1.05rem; background: var(--text-dim); box-shadow: none; }
+  @keyframes cursor-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  /* Bug Squasher game grid — was missing, so the game rendered unstyled */
+  .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .game-hole { aspect-ratio: 1; background: #14141f; border: 1px solid #2a2a3a; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .bug { font-size: 1.8rem; line-height: 1; opacity: 0; transform: scale(0.2); transition: transform 0.15s ease, opacity 0.15s ease; }
+  .bug.up { opacity: 1; transform: scale(1); cursor: pointer; }
+  .bug.squashed { transform: scale(1.5) rotate(20deg); opacity: 0; }
+
+  /* Respect reduced-motion preference for perf/accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .glitch::before, .glitch::after, .duck-waddle, .duck-blink, .typing span { animation: none !important; }
+    .quote-banner .q-cursor { animation: none !important; opacity: 1; }
+    .led { animation: none !important; opacity: 1; }
+  }
+
+  /* ===== Side Panel: system schematic ===== */
+  .side-panel {
+    display: none; /* shown via media query on wide viewports */
+    flex-direction: column;
+    background: var(--term-bg);
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .side-panel-label {
+    font-size: 0.7rem; letter-spacing: 0.15em; color: var(--text-dim);
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-shrink: 0;
+  }
+  .side-panel-label .led { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2.4s infinite; flex-shrink: 0; }
+
+  /* Profile link buttons */
+  .profile-links { display: flex; flex-direction: column; gap: 0.6rem; flex-shrink: 0; }
+  .side-link-btn {
+    display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem;
+    border: 1px solid #2a2a3a; border-radius: 6px; background: var(--term-border);
+    color: var(--text); text-decoration: none; font-size: 0.85rem; transition: all 0.2s;
+  }
+  .side-link-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 229, 255, 0.08); }
+  .side-link-btn-primary { border-color: var(--green); color: var(--green); font-weight: bold; }
+  .side-link-btn-primary:hover { background: rgba(0, 255, 159, 0.1); box-shadow: 0 0 10px rgba(0, 255, 159, 0.15); }
+  .side-link-icon { display: inline-flex; align-items: center; justify-content: center; font-weight: bold; width: 1.4em; white-space: nowrap; text-align: center; flex-shrink: 0; font-size: 0.8rem; }
+
+  /* GitHub contribution heatmap */
+  .gh-contrib-wrap { flex: 1; overflow-y: auto; min-height: 0; }
+  .gh-contrib-loading, .gh-contrib-error { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; }
+  .gh-year-block { margin-bottom: 1.1rem; }
+  .gh-year-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.4rem; }
+  .gh-year-head .count { color: var(--green); }
+  .gh-heatmap { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 4px); gap: 1px; }
+  .gh-cell { width: 4px; height: 4px; border-radius: 1px; background: #1a1a26; }
+
+  @media (min-width: 1180px) {
+    .layout-grid { grid-template-columns: minmax(0, 1fr) 380px; }
+    .side-panel { display: flex; }
+  }
+
+  /* Small screens */
+  @media (max-width: 640px) {
+    #terminalApp { padding: 0.5rem; }
+    .term-body { padding: 1rem; font-size: 0.9rem; }
+    .term-title:last-child { display: none; } /* hide clock, saves header space */
+    .quick-links { gap: 0.35rem; }
+    .q-link { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+    .quote-banner .q-prompt, .quote-banner .q-main { font-size: 2rem; }
+    .quote-banner .q-sub { font-size: 1.3rem; }
+    .quote-banner .q-cursor { height: 1.1rem; }
+    .card-grid, .chat-box { margin: 0.75rem 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="crt-overlay"></div>
+<div class="crt-vignette"></div>
+
+<!-- Boot Screen -->
+<div id="bootScreen">
+  <div>
+    <div id="bootText" style="min-height: 150px;"></div>
+    <div class="boot-bar"><div class="boot-bar-fill" id="bootBar"></div></div>
+    <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 1rem;">PRESS ANY KEY TO SKIP</div>
+  </div>
+</div>
+
+<!-- Terminal App -->
+<div id="terminalApp">
+  <div class="layout-grid">
+    <div class="term-window">
+      <div class="term-header">
+        <div class="flex items-center gap-4">
+          <div class="term-dots">
+            <div class="dot" style="background: #ff5f56;"></div>
+            <div class="dot" style="background: #ffbd2e;"></div>
+            <div class="dot" style="background: #27c93f;"></div>
+          </div>
+          <div class="term-title">guest@kv-portfolio: ~/bash</div>
+        </div>
+        <div class="term-title" id="termClock">--:--:--</div>
+      </div>
+
+      <div class="term-body" id="termBody">
+        <div id="outputArea"></div>
+        <div class="input-area">
+          <span class="prompt" id="promptText">guest@kv-portfolio:~$</span>
+          <input type="text" id="cmdInput" class="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+        </div>
+        <div class="mode-hint" id="modeHint">[ type 'exit' or click (×) to close chat ]</div>
+        <div class="quick-links" id="quickLinks">
+          <span class="q-link" data-cmd="help">help</span>
+          <span class="q-link" data-cmd="about">about</span>
+          <span class="q-link" data-cmd="skills">skills</span>
+          <span class="q-link" data-cmd="projects">projects</span>
+          <span class="q-link" data-cmd="experience">experience</span>
+          <span class="q-link" data-cmd="achievements">achievements</span>
+          <span class="q-link" data-cmd="duck">duck</span>
+          <span class="q-link" data-cmd="contact">contact</span>
+          <span class="q-link" data-cmd="clear">clear</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel: profile links, resume download, live GitHub contribution graph -->
+    <aside class="side-panel" id="sidePanel" aria-hidden="true">
+      <div class="side-panel-label"><span class="led"></span>PROFILE LINKS</div>
+      <div class="profile-links">
+        <a href="https://www.linkedin.com/in/koustava-ramesha-b86214280/" target="_blank" rel="noopener" class="side-link-btn">
+          <span class="side-link-icon">in</span> LinkedIn
+        </a>
+        <a href="https://github.com/KoustavaRamesha" target="_blank" rel="noopener" class="side-link-btn">
+          <span class="side-link-icon">{ }</span> GitHub
+        </a>
+        <a href="https://drive.google.com/file/d/1Wq_uF2OnsyEwsTnsDsEZle_6CIqPAVKH/view?pli=1" target="_blank" rel="noopener" class="side-link-btn side-link-btn-primary">
+          <span class="side-link-icon">&#8595;</span> Download Resume
+        </a>
+      </div>
+
+      <div class="side-panel-label" style="margin-top: 1.5rem;"><span class="led" style="background: var(--cyan); box-shadow: 0 0 6px var(--cyan);"></span>GITHUB ACTIVITY</div>
+      <div id="ghContributions" class="gh-contrib-wrap">
+        <div class="gh-contrib-loading">Fetching contribution data...</div>
+      </div>
+    </aside>
+  </div>
+
+</div>
+
+<script>
+const bootLines = [
+  "> initializing kernel modules...",
+  "> mounting /dev/sda1 to /mnt/portfolio...",
+  "> loading MERN stack runtime... [OK]",
+  "> establishing WebRTC uplink... [OK]",
+  "> initializing AI inference engine... [OK]",
+  "> SYSTEM READY."
+];
+
+const bootScreen = document.getElementById('bootScreen');
+const bootText = document.getElementById('bootText');
+const bootBar = document.getElementById('bootBar');
+const outputArea = document.getElementById('outputArea');
+const cmdInput = document.getElementById('cmdInput');
+const termBody = document.getElementById('termBody');
+const termClock = document.getElementById('termClock');
+const promptText = document.getElementById('promptText');
+const modeHint = document.getElementById('modeHint');
+const quickLinks = document.getElementById('quickLinks');
+
+let history = [];
+let historyIdx = 0;
+let isProcessing = false;
+let isDuckMode = false;
+let isGameMode = false;
+
+// ===== INIT =====
+function startBoot() {
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < bootLines.length) {
+      const div = document.createElement('div');
+      div.className = 'boot-line';
+      div.style.color = i === bootLines.length - 1 ? 'var(--green)' : 'var(--text)';
+      div.textContent = bootLines[i];
+      bootText.appendChild(div);
+      bootBar.style.width = `${((i + 1) / bootLines.length) * 100}%`;
+      i++;
+    } else {
+      clearInterval(interval);
+      setTimeout(exitBoot, 600);
+    }
+  }, 250);
+}
+
+function exitBoot() {
+  bootScreen.classList.add('fade-out');
+  setTimeout(() => {
+    bootScreen.style.display = 'none';
+    initTerminal();
+  }, 500);
+}
+
+function skipBoot() {
+  if (!bootScreen.classList.contains('fade-out') && bootScreen.style.display !== 'none') {
+    exitBoot();
+  }
+  document.removeEventListener('keydown', skipBoot);
+}
+document.addEventListener('keydown', skipBoot);
+
+startBoot();
+
+function updateClock() {
+  const d = new Date();
+  termClock.textContent = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Side panel: live GitHub contribution graph (last 3 years), fetched client-side
+(function () {
+  const container = document.getElementById('ghContributions');
+  if (!container) return;
+  const username = 'KoustavaRamesha';
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear - 1, currentYear - 2];
+
+  function buildHeatmap(contributions) {
+    const grid = document.createElement('div');
+    grid.className = 'gh-heatmap';
+    if (!contributions.length) return grid;
+
+    const firstWeekday = new Date(contributions[0].date + 'T00:00:00').getDay();
+    const padded = new Array(firstWeekday).fill(null).concat(contributions);
+
+    padded.forEach(day => {
+      const cell = document.createElement('div');
+      cell.className = 'gh-cell';
+      if (day) {
+        const lvl = day.level || 0;
+        const alpha = [0, 0.28, 0.5, 0.72, 1][lvl] ?? 0;
+        cell.style.background = alpha ? `rgba(0, 255, 159, ${alpha})` : '#1a1a26';
+        cell.title = `${day.date}: ${day.count} contribution${day.count === 1 ? '' : 's'}`;
+      } else {
+        cell.style.background = 'transparent';
+      }
+      grid.appendChild(cell);
+    });
+    return grid;
+  }
+
+  Promise.all(
+    years.map(y =>
+      fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=${y}`)
+        .then(r => { if (!r.ok) throw new Error('bad response'); return r.json(); })
+    )
+  ).then(results => {
+    container.innerHTML = '';
+    results.forEach((data, i) => {
+      const year = years[i];
+      const contributions = data.contributions || [];
+      const total = (data.total && data.total[year] != null)
+        ? data.total[year]
+        : contributions.reduce((sum, d) => sum + d.count, 0);
+
+      const block = document.createElement('div');
+      block.className = 'gh-year-block';
+
+      const head = document.createElement('div');
+      head.className = 'gh-year-head';
+      head.innerHTML = `<span>${year}</span><span class="count">${total} contribution${total === 1 ? '' : 's'}</span>`;
+      block.appendChild(head);
+      block.appendChild(buildHeatmap(contributions));
+
+      container.appendChild(block);
+    });
+  }).catch(() => {
+    container.innerHTML = `<div class="gh-contrib-error">Couldn't load live contribution data. <a href="https://github.com/${username}" target="_blank" rel="noopener" class="term-link" style="margin:0;">View on GitHub →</a></div>`;
+  });
+})();
+
+
+const quotes = [
+  { text: "PER ASPERA AD ASTRA", translation: "Through hardships to the stars." },
+  { text: "समत्वं योग उच्यते।", translation: "Equanimity is Yoga." },
+  { text: "AMOR FATI", translation: "Love your fate." },
+  { text: "道可道，非常道", translation: "The way that can be spoken is not the eternal Way." },
+  { text: "CAMINANTE, NO HAY CAMINO", translation: "There is no path. The path is made by walking." },
+  { text: "Μηδὲν ἄγαν", translation: "Nothing in excess." },
+  { text: "MEMENTO MORI", translation: "Remember that you must die." }
+];
+let quoteIndex = 0;
+let quoteRunId = 0;
+
+async function typeChars(el, text, speed) {
+  for (let i = 0; i < text.length; i++) {
+    el.textContent += text.charAt(i);
+    if (el.classList.contains('glitch')) el.setAttribute('data-text', el.textContent);
+    await new Promise(r => setTimeout(r, speed));
+  }
+}
+
+async function eraseChars(el, speed) {
+  while (el.textContent.length > 0) {
+    el.textContent = el.textContent.slice(0, -1);
+    if (el.classList.contains('glitch')) el.setAttribute('data-text', el.textContent);
+    await new Promise(r => setTimeout(r, speed));
+  }
+}
+
+async function startQuoteBanner() {
+  const runId = ++quoteRunId;
+  const container = document.createElement('div');
+  container.className = 'quote-banner term-line';
+  container.innerHTML = `
+    <span class="q-line">
+      <span class="q-prompt">&gt;</span><span class="glitch q-main" data-text=""></span><span class="q-cursor" id="qc-main"></span>
+    </span>
+    <span class="q-sub-line">
+      <span class="q-sub"></span><span class="q-cursor" id="qc-sub" style="display:none;"></span>
+    </span>
+  `;
+  outputArea.appendChild(container);
+
+  const mainEl = container.querySelector('.q-main');
+  const subEl = container.querySelector('.q-sub');
+  const cursorMain = container.querySelector('#qc-main');
+  const cursorSub = container.querySelector('#qc-sub');
+
+  while (container.parentNode && runId === quoteRunId) {
+    const q = quotes[quoteIndex];
+
+    cursorMain.style.display = 'inline-block';
+    cursorSub.style.display = 'none';
+    await typeChars(mainEl, q.text, 35);
+    if (!container.parentNode || runId !== quoteRunId) return;
+
+    await new Promise(r => setTimeout(r, 300));
+    cursorMain.style.display = 'none';
+    cursorSub.style.display = 'inline-block';
+    await typeChars(subEl, q.translation, 16);
+    if (!container.parentNode || runId !== quoteRunId) return;
+
+    await new Promise(r => setTimeout(r, 3200));
+    if (!container.parentNode || runId !== quoteRunId) return;
+
+    await eraseChars(subEl, 8);
+    cursorSub.style.display = 'none';
+    cursorMain.style.display = 'inline-block';
+    await eraseChars(mainEl, 14);
+    if (!container.parentNode || runId !== quoteRunId) return;
+
+    await new Promise(r => setTimeout(r, 200));
+    quoteIndex = (quoteIndex + 1) % quotes.length;
+  }
+}
+
+async function initTerminal() {
+  startQuoteBanner();
+  await printLine("");
+  await printLine("Koustava Ramesha — Full Stack Software Engineer", 'var(--green)');
+  await printLine("Specializing in MERN, WebRTC, and AI-driven automation.", 'var(--green)');
+  await printLine("Type 'help' or click a command below to begin.", 'var(--text-dim)');
+  await printLine("");
+  cmdInput.focus();
+}
+
+// ===== TERMINAL PRINTING LOGIC =====
+async function printLine(html, color = 'var(--text)', typing = true, speed = 3) {
+  const div = document.createElement('div');
+  div.className = 'term-line';
+  div.style.color = color;
+  outputArea.appendChild(div);
+  
+  if (typing) {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const text = temp.textContent;
+    
+    for (let i = 0; i < text.length; i++) {
+      if (!div.parentNode) return;
+      div.textContent += text.charAt(i);
+      termBody.scrollTop = termBody.scrollHeight;
+      await new Promise(r => setTimeout(r, speed));
+    }
+    div.innerHTML = html; 
+  } else {
+    div.innerHTML = html;
+  }
+  termBody.scrollTop = termBody.scrollHeight;
+}
+
+async function typeText(element, text, speed = 4) {
+  for (let i = 0; i < text.length; i++) {
+    if (!element.parentNode) return;
+    element.textContent += text.charAt(i);
+    termBody.scrollTop = termBody.scrollHeight;
+    await new Promise(r => setTimeout(r, speed));
+  }
+}
+
+function printHTML(html) {
+  const div = document.createElement('div');
+  div.className = 'term-line render-anim';
+  div.innerHTML = html;
+  outputArea.appendChild(div);
+  termBody.scrollTop = termBody.scrollHeight;
+}
+
+function fakeLoading(text, duration, callback) {
+  return new Promise(async (resolve) => {
+    const div = document.createElement('div');
+    div.className = 'term-line';
+    div.style.color = 'var(--cyan)';
+    outputArea.appendChild(div);
+    
+    let dots = 0;
+    const interval = setInterval(() => {
+      div.textContent = text + '.'.repeat(dots % 4);
+      dots++;
+    }, 200);
+
+    await new Promise(r => setTimeout(r, duration));
+    clearInterval(interval);
+    div.textContent = text + " [DONE]";
+    div.style.color = 'var(--green)';
+    await callback();
+    resolve();
+  });
+}
+
+// ===== COMMAND PROCESSING =====
+async function executeCommand(cmd) {
+  if (isDuckMode) {
+    if (isProcessing) return;
+    await handleDuckChat(cmd);
+    return;
+  }
+
+  if (isProcessing) return;
+
+  isProcessing = true;
+  cmdInput.disabled = true;
+
+  await printLine(`<span style="color:var(--green)">guest@kv-portfolio:~$</span> ${cmd}`, 'var(--text)', false);
+  history.push(cmd);
+  historyIdx = history.length;
+
+  const args = cmd.toLowerCase().trim().split(' ');
+  const command = args[0];
+
+  switch(command) {
+    case 'help':
+      await showHelp();
+      break;
+    case 'about':
+      await fakeLoading("> Decrypting personnel file", 400, showAbout);
+      break;
+    case 'skills':
+      await fakeLoading("> Compiling skill tree", 350, showSkills);
+      break;
+    case 'projects':
+      await fakeLoading("> Fetching project database", 400, showProjects);
+      break;
+    case 'experience':
+      await fakeLoading("> Accessing timeline logs", 350, showExperience);
+      break;
+    case 'achievements':
+      await fakeLoading("> Fetching achievement data", 350, showAchievements);
+      break;
+    case 'game':
+      isGameMode = true;
+      await fakeLoading("> Initializing Bug Squasher protocol", 500, initGame);
+      isGameMode = false;
+      break;
+    case 'duck':
+      isDuckMode = true;
+      quickLinks.style.display = 'none';
+      modeHint.style.display = 'block';
+      promptText.innerHTML = `<span style="color: var(--yellow)">🦆(duck)</span>:<span style="color: var(--cyan)">~$</span>`;
+      await fakeLoading("> Connecting to Mr. Quackers", 350, initDuckChat);
+      isProcessing = false;
+      cmdInput.disabled = false;
+      cmdInput.focus();
+      return; 
+    case 'contact':
+      await showContact();
+      break;
+    case 'clear':
+      outputArea.innerHTML = '';
+      quoteIndex = 0;
+      await initTerminal();
+      break;
+    case 'sudo':
+      await printLine("User is not in the sudoers file. This incident will be reported. 🚨", 'var(--pink)');
+      break;
+    case 'ls':
+      await printLine("about  skills  projects  experience  achievements  duck  game  contact  help  clear", 'var(--cyan)');
+      break;
+    case '':
+      break;
+    default:
+      await printLine(`command not found: ${command}. Type 'help' for available commands.`, 'var(--pink)');
+  }
+
+  if (!isDuckMode) {
+    isProcessing = false;
+    cmdInput.disabled = false;
+    cmdInput.focus();
+  }
+}
+
+function exitDuckMode() {
+  isDuckMode = false;
+  isProcessing = false;
+  cmdInput.disabled = false;
+  quickLinks.style.display = 'flex';
+  modeHint.style.display = 'none';
+  promptText.innerHTML = `<span style="color: var(--green)">guest@kv-portfolio</span>:<span style="color: var(--cyan)">~$</span>`;
+  printLine("Session closed. Returning to main terminal.", 'var(--cyan)', false);
+  cmdInput.focus();
+}
+
+// ===== COMMAND OUTPUTS =====
+async function showHelp() {
+  await printLine("AVAILABLE COMMANDS:", 'var(--cyan)');
+  await printLine("  help         - Display this help menu");
+  await printLine("  about        - Decrypt developer profile & stats");
+  await printLine("  skills       - Render skill tree inventory");
+  await printLine("  projects     - Fetch completed quest logs");
+  await printLine("  experience   - View career timeline");
+  await printLine("  achievements - View hackathon achievements");
+  await printLine("  game         - Launch Bug Squasher arcade");
+  await printLine("  duck         - Initiate rubber duck debugger");
+  await printLine("  contact      - Display contact frequencies");
+  await printLine("  clear        - Wipe terminal screen");
+}
+
+async function showAbout() {
+  const grid = document.createElement('div');
+  grid.className = 'render-anim';
+  grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; border: 1px solid #2a2a3a; padding: 1.5rem; background: var(--term-border); border-radius: 8px;';
+  outputArea.appendChild(grid);
+
+  const leftCol = document.createElement('div');
+  grid.appendChild(leftCol);
+
+  const header = document.createElement('div');
+  header.style.cssText = 'color: var(--cyan); border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; margin-bottom: 1rem;';
+  leftCol.appendChild(header);
+  await typeText(header, "PROFILE_DATA", 4);
+
+  const rows = [
+    { label: "NAME:", value: "Koustava Ramesha" },
+    { label: "ROLE:", value: "Full Stack Developer | Software Engineer" },
+    { label: "LOCATION:", value: "Bangalore, India" },
+    { label: "EMAIL:", value: "koustava.r@gmail.com" }
+  ];
+
+  for (const row of rows) {
+    const rowEl = document.createElement('div');
+    rowEl.style.marginBottom = '0.5rem';
+    rowEl.innerHTML = `<span style="color: var(--text-dim)">${row.label}</span> `;
+    const valEl = document.createElement('span');
+    valEl.style.color = 'var(--text)';
+    rowEl.appendChild(valEl);
+    leftCol.appendChild(rowEl);
+    await typeText(valEl, row.value, 4);
+  }
+
+  const bio = document.createElement('div');
+  bio.style.cssText = 'margin-top: 1rem; color: var(--text-dim); font-size: 0.95rem; line-height: 1.5;';
+  leftCol.appendChild(bio);
+  await typeText(bio, "Full Stack Software Engineer specializing in the MERN stack, TypeScript, and Next.js. Experienced in designing scalable RESTful APIs, real-time WebRTC architectures, and AI-driven automation pipelines using LLMs and Computer Vision.", 1);
+
+  const rightCol = document.createElement('div');
+  rightCol.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center;';
+  rightCol.innerHTML = `
+    <svg viewBox="0 0 300 220" width="180" height="180">
+      <ellipse cx="40" cy="160" rx="15" ry="10" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.4s;"/>
+      <ellipse cx="85" cy="175" rx="18" ry="12" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.2s;"/>
+      <ellipse cx="210" cy="180" rx="20" ry="14" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.1s;"/>
+      <g class="duck-waddle" style="animation-delay: 0s;">
+        <path d="M 115 125 L 95 115 L 100 135 Z" fill="#fff8e7" stroke="#e0d8c8" stroke-width="1"/>
+        <ellipse cx="150" cy="140" rx="45" ry="30" fill="#fff8e7" stroke="#e0d8c8" stroke-width="1"/>
+        <path d="M 130 135 C 120 150 140 165 160 160 C 165 145 145 130 130 135 Z" fill="#f2eedf" stroke="#e0d8c8" stroke-width="1"/>
+        <circle cx="185" cy="110" r="22" fill="#fff8e7" stroke="#e0d8c8" stroke-width="1"/>
+        <path d="M 200 105 C 215 100 220 115 215 120 C 210 115 200 115 200 110 Z" fill="#ff9f1c" stroke="#cc7c10" stroke-width="1"/>
+        <circle cx="180" cy="105" r="4" fill="#0a0a14" class="duck-blink"/>
+        <circle cx="181" cy="104" r="1" fill="#fff8e7"/>
+      </g>
+    </svg>
+    <div style="color: var(--green); margin-top: 0.5rem; font-size: 0.8rem;">SYSTEM ONLINE</div>
+  `;
+  grid.appendChild(rightCol);
+
+  await printLine("CHARACTER_STATS:", 'var(--cyan)');
+  const statsBox = document.createElement('div');
+  statsBox.className = 'render-anim';
+  statsBox.style.cssText = 'border: 1px solid #2a2a3a; padding: 1rem; background: var(--term-border); border-radius: 8px; margin-bottom: 1rem;';
+  outputArea.appendChild(statsBox);
+
+  const stats = [
+    { label: "MERN STACK", width: "95%", color: "var(--cyan)" },
+    { label: "AI / ML INTEGRATION", width: "88%", color: "var(--green)" },
+    { label: "SYSTEM DESIGN", width: "85%", color: "var(--yellow)" },
+    { label: "WEBRTC / REAL-TIME", width: "92%", color: "var(--pink)" }
+  ];
+
+  for (const stat of stats) {
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    row.innerHTML = `<span style="color: var(--text-dim); width: 150px;">${stat.label}</span>`;
+    const bar = document.createElement('div');
+    bar.className = 'stat-bar';
+    const fill = document.createElement('div');
+    fill.className = 'stat-fill';
+    fill.style.background = stat.color;
+    fill.style.boxShadow = `0 0 5px ${stat.color}`;
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    statsBox.appendChild(row);
+    
+    await new Promise(r => setTimeout(r, 100));
+    fill.style.width = stat.width;
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
+async function showSkills() {
+  await printLine("SKILL_TREE_INVENTORY:", 'var(--cyan)');
+  const grid = document.createElement('div');
+  grid.className = 'card-grid';
+  outputArea.appendChild(grid);
+
+  const skills = [
+    { cat: "LANGUAGES", color: "var(--pink)", list: "Python, JavaScript, TypeScript, SQL", width: "95%" },
+    { cat: "FRONTEND", color: "var(--cyan)", list: "React.js, Next.js, Tailwind CSS, Responsive Design", width: "95%" },
+    { cat: "BACKEND", color: "var(--green)", list: "Node.js, Express, REST APIs, WebRTC, JWT, OAuth, Microservices", width: "92%" },
+    { cat: "AI & ML", color: "var(--yellow)", list: "YOLO, ByteTrack, Google Gemini, LLM, OCR, OpenCV, Computer Vision", width: "88%" },
+    { cat: "DATABASES", color: "var(--pink)", list: "MongoDB, MySQL, SQLite, Firebase, Firestore, Supabase", width: "90%" },
+    { cat: "DEVOPS & TOOLS", color: "var(--cyan)", list: "Git, GitHub, Docker, Vercel", width: "85%" }
+  ];
+
+  for (const s of skills) {
+    const card = document.createElement('div');
+    card.className = 'term-card render-anim';
+    grid.appendChild(card);
+    
+    const title = document.createElement('div');
+    title.style.cssText = `color: ${s.color}; margin-bottom: 0.75rem; font-weight: bold; font-size: 1.1rem;`;
+    card.appendChild(title);
+    await typeText(title, `[${s.cat}]`, 4);
+
+    const listWrap = document.createElement('div');
+    listWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;';
+    card.appendChild(listWrap);
+
+    const items = s.list.split(', ');
+    for (const item of items) {
+      const tag = document.createElement('span');
+      tag.className = 'skill-tag';
+      listWrap.appendChild(tag);
+      await typeText(tag, item, 6);
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    const barWrap = document.createElement('div');
+    barWrap.className = 'stat-bar';
+    barWrap.style.marginTop = 'auto'; 
+    const fill = document.createElement('div');
+    fill.className = 'stat-fill';
+    fill.style.background = s.color;
+    fill.style.boxShadow = `0 0 5px ${s.color}`;
+    barWrap.appendChild(fill);
+    card.appendChild(barWrap);
+    
+    await new Promise(r => setTimeout(r, 100));
+    fill.style.width = s.width;
+    await new Promise(r => setTimeout(r, 200));
+  }
+}
+
+async function showProjects() {
+  await printLine("QUEST_LOGS_RECOVERED:", 'var(--cyan)');
+  const grid = document.createElement('div');
+  grid.className = 'card-grid';
+  outputArea.appendChild(grid);
+
+  const projects = [
+    { 
+      name: "STR Mix Digital Admin Dashboard", 
+      tags: "Next.js 15, React 19, TS, Firebase, Supabase, Genkit",
+      desc: "Production-grade platform serving 1,000+ MAU. Architected real-time sync with Firebase/Supabase. Integrated Google Gemini for LLM automation, reducing manual workload by 65%. Achieved 95+ Lighthouse score.",
+      live: "https://str-mix.vercel.app/", 
+      github: "https://github.com/KoustavaRamesha/str-mix-admin-dashboard" 
+    },
+    { 
+      name: "Industrial Safety AI Surveillance", 
+      tags: "Python, PySide6, YOLO, ByteTrack, OpenCV, SQLite",
+      desc: "Desktop app with multi-camera YOLO detection for safety hazards. Engineered shared InferenceManager and ByteTrack tracking for stabilization. Automated incident logging with SMS alerts.",
+      live: null, 
+      github: "https://github.com/KoustavaRamesha/surveillance-system" 
+    },
+    { 
+      name: "Aether – Decentralized P2P Chat", 
+      tags: "React, TypeScript, Node.js, WebRTC",
+      desc: "E2E encrypted P2P messaging app. Built Node.js signaling server for 100+ concurrent connections. Engineered AES-256 encryption, achieving <50ms messaging latency via WebRTC.",
+      live: "https://aether-woad-three.vercel.app/", 
+      github: "https://github.com/KoustavaRamesha/aether" 
+    }
+  ];
+
+  for (const p of projects) {
+    const card = document.createElement('div');
+    card.className = 'term-card render-anim';
+    card.style.display = 'flex';
+    card.style.flexDirection = 'column';
+    grid.appendChild(card);
+
+    const name = document.createElement('div');
+    name.style.cssText = 'color: var(--text); font-weight: bold; font-size: 1.1rem; margin-bottom: 0.5rem;';
+    card.appendChild(name);
+    await typeText(name, p.name, 2);
+
+    const tags = document.createElement('div');
+    tags.style.cssText = 'font-size: 0.8rem; color: var(--cyan); margin-bottom: 0.75rem; font-weight: bold;';
+    card.appendChild(tags);
+    await typeText(tags, p.tags, 1);
+
+    const desc = document.createElement('div');
+    desc.style.cssText = 'font-size: 0.9rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.5;';
+    card.appendChild(desc);
+    await typeText(desc, p.desc, 1);
+    
+    const links = document.createElement('div');
+    links.style.marginTop = 'auto';
+    if (p.live) {
+      links.innerHTML += `<a href="${p.live}" target="_blank" class="term-link">[LIVE DEMO]</a>`;
+    }
+    if (p.github) {
+      links.innerHTML += `<a href="${p.github}" target="_blank" class="term-link">[GITHUB]</a>`;
+    }
+    card.appendChild(links);
+    
+    await new Promise(r => setTimeout(r, 200));
+  }
+}
+
+async function showExperience() {
+  await printLine("CAREER_TIMELINE:", 'var(--cyan)');
+  const timeline = document.createElement('div');
+  timeline.className = 'render-anim';
+  timeline.style.cssText = 'border-left: 2px solid var(--green); padding-left: 1.5rem; margin: 1rem 0;';
+  outputArea.appendChild(timeline);
+
+  const jobs = [
+    { date: "FREELANCE", color: "var(--green)", title: "Full Stack Developer @ STR Mix Digital", desc: "Engineered Next.js 15 platform handling 1,000+ monthly visits. Architected synchronization pipelines with Firebase & Supabase sustaining 99.9% uptime. Integrated Google Genkit for LLM-powered automation." }
+  ];
+
+  for (const j of jobs) {
+    const item = document.createElement('div');
+    item.style.marginBottom = '1.5rem';
+    item.style.position = 'relative';
+    item.innerHTML = `<div style="position: absolute; left: -1.6rem; top: 0.2rem; width: 10px; height: 10px; background: ${j.color}; border-radius: 50%; box-shadow: 0 0 10px ${j.color};"></div>`;
+    timeline.appendChild(item);
+
+    const dateEl = document.createElement('div');
+    dateEl.style.color = j.color;
+    item.appendChild(dateEl);
+    await typeText(dateEl, j.date, 4);
+
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = 'color: var(--text); font-weight: bold;';
+    item.appendChild(titleEl);
+    await typeText(titleEl, j.title, 2);
+
+    const descEl = document.createElement('div');
+    descEl.style.cssText = 'color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
+    item.appendChild(descEl);
+    await typeText(descEl, j.desc, 1);
+    
+    await new Promise(r => setTimeout(r, 200));
+  }
+}
+
+async function showAchievements() {
+  await printLine("ACHIEVEMENTS_LOG:", 'var(--cyan)');
+  const box = document.createElement('div');
+  box.className = 'render-anim';
+  box.style.cssText = 'border: 1px solid var(--yellow); padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
+  box.innerHTML = `<div style="position: absolute; left: -1.6rem; top: 0.2rem; width: 10px; height: 10px; background: var(--yellow); border-radius: 50%; box-shadow: 0 0 10px var(--yellow);"></div>`;
+  outputArea.appendChild(box);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'color: var(--yellow); font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;';
+  box.appendChild(title);
+  await typeText(title, "Top 10 Finalist - Hack-to-Hire National Hackathon", 2);
+
+  const org = document.createElement('div');
+  org.style.cssText = 'color: var(--cyan); margin-bottom: 0.5rem;';
+  box.appendChild(org);
+  await typeText(org, "TRIKAYA x BeetleX", 4);
+
+  const desc = document.createElement('div');
+  desc.style.cssText = 'color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
+  box.appendChild(desc);
+  await typeText(desc, "Ranked among the top 10 teams out of 4,000+ participating teams nationwide in a high-stakes national level hackathon.", 1);
+
+  const link = document.createElement('div');
+  link.style.marginTop = '0.75rem';
+  link.innerHTML = `<a href="https://lnkd.in/p/dZgcBjj5" target="_blank" class="term-link">[LINKEDIN POST]</a>`;
+  box.appendChild(link);
+}
+
+async function showContact() {
+  await printLine("ESTABLISH_CONNECTION:", 'var(--green)');
+  const box = document.createElement('div');
+  box.className = 'render-anim';
+  box.style.cssText = 'border: 1px solid #2a2a3a; padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
+  outputArea.appendChild(box);
+
+  const contacts = [
+    { label: "EMAIL:", val: "koustava.r@gmail.com", link: "mailto:koustava.r@gmail.com" },
+    { label: "PHONE:", val: "+91 80502 69703", link: "tel:+918050269703" },
+    { label: "GITHUB:", val: "github.com/KoustavaRamesha", link: "https://github.com/KoustavaRamesha" },
+    { label: "LINKEDIN:", val: "linkedin.com/in/koustava-ramesha", link: "https://www.linkedin.com/in/koustava-ramesha-b86214280/" }
+  ];
+
+  for (const c of contacts) {
+    const row = document.createElement('div');
+    row.style.marginBottom = '0.5rem';
+    row.innerHTML = `<span style="color: var(--text-dim)">${c.label}</span> `;
+    const valEl = document.createElement('a');
+    valEl.href = c.link;
+    valEl.target = "_blank";
+    valEl.className = "term-link";
+    valEl.style.display = 'inline';
+    row.appendChild(valEl);
+    box.appendChild(row);
+    await typeText(valEl, c.val, 2);
+  }
+}
+
+// ===== DUCK CHATBOT =====
+function initDuckChat() {
+  printHTML(`
+    <div class="chat-box render-anim" id="duckChat">
+      <div class="chat-header">
+        <span style="color: var(--yellow)">🦆 MR. QUACKERS [ONLINE]</span>
+        <span class="close-chat-btn" id="closeChatBtn">✕ CLOSE</span>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="chat-msg msg-duck">Quack! I'm Mr. Quackers, your rubber duck debugger. Tell me what's broken. (Type 'exit' or click the ✕ to close)</div>
+      </div>
+      <div class="quick-replies" id="quickReplies">
+        <button class="duck-quick-btn" data-msg="I have a bug">I have a bug</button>
+        <button class="duck-quick-btn" data-msg="React hook issue">React hook issue</button>
+        <button class="duck-quick-btn" data-msg="Tell me a joke">Tell me a joke</button>
+        <button class="duck-quick-btn" data-msg="Production is down">Production is down</button>
+        <button class="duck-quick-btn" data-msg="I'm burnt out">I'm burnt out</button>
+      </div>
+    </div>
+  `);
+  
+  document.getElementById('closeChatBtn').addEventListener('click', async () => {
+    if (!isDuckMode || isProcessing) return;
+    isProcessing = true; 
+    await printLine(`<span style="color: var(--yellow)">🦆(duck)</span>:<span style="color: var(--cyan)">~$</span> exit`, 'var(--text)', false);
+    exitDuckMode();
+  });
+
+  document.querySelectorAll('.duck-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (isProcessing) return;
+      const msg = btn.getAttribute('data-msg');
+      cmdInput.value = msg;
+      executeCommand(msg);
+      cmdInput.value = '';
+    });
+  });
+}
+
+async function handleDuckChat(text) {
+  const chatMsgs = document.getElementById('chatMsgs');
+  if (!chatMsgs) return;
+  
+  isProcessing = true;
+  cmdInput.disabled = true;
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-msg msg-user';
+  userMsg.textContent = text;
+  chatMsgs.appendChild(userMsg);
+
+  if (text.toLowerCase() === 'exit') {
+    exitDuckMode();
+    return;
+  }
+
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg msg-duck typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chatMsgs.appendChild(typing);
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  await new Promise(r => setTimeout(r, 800));
+  
+  typing.remove();
+  const reply = getDuckReply(text);
+  const duckMsg = document.createElement('div');
+  duckMsg.className = 'chat-msg msg-duck';
+  chatMsgs.appendChild(duckMsg);
+
+  for (let i = 0; i < reply.length; i++) {
+    duckMsg.textContent += reply.charAt(i);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    await new Promise(r => setTimeout(r, 6));
+  }
+
+  isProcessing = false;
+  cmdInput.disabled = false;
+  cmdInput.focus();
+}
+
+function getDuckReply(text) {
+  const lower = text.toLowerCase();
+  // Greetings
+  if (lower.match(/^(hi|hello|hey|quack|yo)\b/)) return "Quack! Hello there. What seems to be the problem? A bug? A bad architecture? Talk to me.";
+  // Help
+  if (lower.includes('help') || lower.includes('stuck')) return "Quack. Okay, let's break it down. What is the exact behavior you're seeing vs what you expect to see?";
+  // Javascript/Typescript specific
+  if (lower.includes('undefined') || lower.includes('null')) return "Ah, the classic null/undefined error. Have you checked your API response? Is your await missing? Quack.";
+  if (lower.includes('react') || lower.includes('hook')) return "React hooks acting up? Check your dependency array! If it's infinite loops, that's usually the culprit. Quack.";
+  if (lower.includes('api') || lower.includes('fetch')) return "API issues? Check your CORS, check your headers, and for the love of all things holy, check if you're hitting the right endpoint. Quack.";
+  if (lower.includes('bug') || lower.includes('error')) return "Quack! Okay, when did it last work? What changed since then? Have you tried explaining it to me line by line?";
+  if (lower.includes('css')) return "Oh, CSS. Is the parent flex? Is it grid? Did you check the box model? Try `display: flex` first. Then cry. Quack.";
+  if (lower.includes('merge') || lower.includes('conflict') || lower.includes('git')) return "Deep breaths. git status. git stash. Walk away. Get coffee. Come back. git stash pop. Cry if needed. The merge will still be there. So will I. Quack.";
+  if (lower.includes('production') || lower.includes('down') || lower.includes('outage')) return "🔥 PRODUCTION?! Okay. 1) Don't panic. 2) Rollback. 3) Check the logs. 4) Blame the intern. I believe in you. Quack.";
+  if (lower.includes('coffee') || lower.includes('tired') || lower.includes('sleep') || lower.includes('burnt') || lower.includes('burnout')) return "Quack. Sleep. Seriously. The bug will still be there tomorrow. So will the coffee. Your brain won't fix anything at 3 AM that it can't fix at 9 AM.";
+  if (lower.includes('joke')) return "Why do programmers prefer dark mode? Because light attracts bugs. Quack quack.";
+  if (lower.includes('thank') || lower.includes('thanks')) return "Quack! You're welcome. I'll be here all night. Just swimming in my terminal. 🦆";
+  // Fallback
+  return "Quack. Hmm. Have you tried console.log? It's always console.log. Or maybe git blame. Tell me more about what the code is doing.";
+}
+
+// ===== BUG SQUASHER GAME =====
+async function initGame() {
+  await printLine("ARCADE MODE INITIALIZED. Click bugs to squash them. You have 30 seconds.", 'var(--pink)');
+  
+  const gameId = 'game-' + Date.now();
+  printHTML(`
+    <div class="render-anim" style="border: 2px solid var(--pink); padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;" id="${gameId}">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-family: 'Press Start 2P'; font-size: 0.8rem;">
+        <div>SCORE: <span style="color: var(--green)" id="${gameId}-score">0</span></div>
+        <div>TIME: <span style="color: var(--yellow)" id="${gameId}-time">30</span></div>
+        <div>BEST: <span style="color: var(--pink)" id="${gameId}-best">0</span></div>
+      </div>
+      <div class="game-grid" id="${gameId}-grid"></div>
+    </div>
+  `);
+
+  const grid = document.getElementById(`${gameId}-grid`);
+  const scoreEl = document.getElementById(`${gameId}-score`);
+  const timeEl = document.getElementById(`${gameId}-time`);
+  const bestEl = document.getElementById(`${gameId}-best`);
+
+  let score = 0, timeLeft = 30;
+  let isPlaying = true;
+  let bestScore = parseInt(localStorage.getItem('kitBugBest') || '0');
+  bestEl.textContent = bestScore;
+
+  const bugs = [
+    { emoji: '👾', points: 10 },
+    { emoji: '🦠', points: 20 },
+    { emoji: '💀', points: 50 }
+  ];
+
+  for (let i = 0; i < 9; i++) {
+    const hole = document.createElement('div');
+    hole.className = 'game-hole';
+    hole.innerHTML = `<div class="bug" data-hole="${i}"></div>`;
+    grid.appendChild(hole);
+  }
+
+  const spawnTimer = setInterval(() => {
+    if (!isPlaying) return;
+    const available = [...grid.querySelectorAll('.bug')].filter(b => !b.classList.contains('up') && !b.classList.contains('squashed'));
+    if (available.length === 0) return;
+    
+    const bug = available[Math.floor(Math.random() * available.length)];
+    const type = bugs[Math.floor(Math.random() * bugs.length)];
+    bug.textContent = type.emoji;
+    bug.dataset.points = type.points;
+    bug.classList.add('up');
+    
+    setTimeout(() => {
+      if (bug.classList.contains('up') && !bug.classList.contains('squashed')) bug.classList.remove('up');
+    }, 800);
+  }, 600);
+
+  grid.addEventListener('click', (e) => {
+    const bug = e.target.closest('.bug');
+    if (!bug || !isPlaying || bug.classList.contains('squashed') || !bug.classList.contains('up')) return;
+    bug.classList.add('squashed');
+    score += parseInt(bug.dataset.points);
+    scoreEl.textContent = score;
+    setTimeout(() => bug.classList.remove('up', 'squashed'), 400);
+  });
+
+  const countdown = setInterval(async () => {
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      isPlaying = false;
+      clearInterval(spawnTimer);
+      clearInterval(countdown);
+      grid.querySelectorAll('.bug').forEach(b => b.classList.remove('up', 'squashed'));
+      
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('kitBugBest', bestScore);
+        bestEl.textContent = bestScore;
+        await printLine("🏆 NEW HIGH SCORE!", 'var(--green)');
+      }
+      
+      await printLine("SYSTEM CRASH. Game over. Type 'game' to play again.", 'var(--pink)');
+    }
+  }, 1000);
+}
+
+// ===== INPUT HANDLING =====
+cmdInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const cmd = cmdInput.value;
+    cmdInput.value = '';
+    if (isProcessing) return;
+    executeCommand(cmd);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIdx > 0) {
+      historyIdx--;
+      cmdInput.value = history[historyIdx];
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIdx < history.length - 1) {
+      historyIdx++;
+      cmdInput.value = history[historyIdx];
+    } else {
+      cmdInput.value = '';
+    }
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('bug') && !e.target.classList.contains('q-link') && !e.target.classList.contains('close-chat-btn') && !e.target.classList.contains('term-link') && !e.target.classList.contains('duck-quick-btn')) {
+    cmdInput.focus();
+  }
+});
+
+document.querySelectorAll('.q-link').forEach(link => {
+  link.addEventListener('click', () => {
+    if (isProcessing) return;
+    const cmd = link.getAttribute('data-cmd');
+    cmdInput.value = cmd;
+    executeCommand(cmd);
+    cmdInput.value = '';
+  });
+});
+</script>
+</body>
+</html>
