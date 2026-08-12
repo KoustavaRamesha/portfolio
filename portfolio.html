@@ -101,7 +101,8 @@
     height: 100dvh;
     padding: 0.75rem; 
     position: relative; 
-    z-index: 10; 
+    /* z-index intentionally removed: it was creating a stacking context
+       that prevented children from exceeding the CRT overlay (z-index:100) */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -331,7 +332,7 @@
     flex-shrink: 0;
     animation: picGlow 3s ease-in-out infinite;
     position: relative;
-    z-index: 101; /* Render above CRT overlay (z-index: 100) */
+    z-index: 101; /* Above CRT overlay (z-index:100) — works now that #terminalApp no longer creates a stacking context */
   }
   @keyframes picGlow {
     0%, 100% { box-shadow: 0 0 18px rgba(0, 255, 159, 0.35), 0 0 40px rgba(0, 229, 255, 0.1); }
