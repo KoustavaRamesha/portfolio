@@ -578,7 +578,11 @@
 
       <div class="side-panel-label" style="margin-top: 1.5rem;"><span class="led" style="background: var(--cyan); box-shadow: 0 0 6px var(--cyan);"></span>GITHUB ACTIVITY</div>
       <div id="ghContributions" class="gh-contrib-wrap">
-        <div class="gh-contrib-loading">Fetching contribution data...</div>
+        <a href="https://github.com/KoustavaRamesha" target="_blank" rel="noopener" title="View Koustava's GitHub Profile">
+          <img src="https://github-readme-activity-graph.vercel.app/graph?username=KoustavaRamesha&theme=react-dark&bg_color=0d0d14&color=00ff9f&line=00e5ff&point=ff2e6f&hide_border=true" 
+               alt="Koustava Ramesha GitHub Activity" 
+               style="width: 100%; border-radius: 6px; display: block; filter: drop-shadow(0 2px 8px rgba(0,229,255,0.15));" />
+        </a>
       </div>
     </aside>
   </div>
@@ -711,16 +715,21 @@ updateClock();
     return grid;
   }
 
-  Promise.all(
+  Promise.allSettled(
     years.map(y =>
-      fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=${y}`)
-        .then(r => { if (!r.ok) throw new Error('bad response'); return r.json(); })
+      fetch(`/api/contributions?username=${username}&y=${y}`)
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
     )
   ).then(results => {
+    const validResults = results.filter(r => r.status === 'fulfilled' && r.value && Array.isArray(r.value.contributions) && r.value.contributions.length > 0);
+    if (!validResults.length) return; // Keep high quality SVG activity graph if custom endpoint is not responding
+
     container.innerHTML = '';
-    results.forEach((data, i) => {
+    results.forEach((res, i) => {
+      if (res.status !== 'fulfilled' || !res.value || !Array.isArray(res.value.contributions) || !res.value.contributions.length) return;
+      const data = res.value;
       const year = years[i];
-      const contributions = data.contributions || [];
+      const contributions = data.contributions;
       const total = (data.total && data.total[year] != null)
         ? data.total[year]
         : contributions.reduce((sum, d) => sum + d.count, 0);
@@ -737,7 +746,7 @@ updateClock();
       container.appendChild(block);
     });
   }).catch(() => {
-    container.innerHTML = `<div class="gh-contrib-error">Couldn't load live contribution data. <a href="https://github.com/${username}" target="_blank" rel="noopener" class="term-link" style="margin:0;">View on GitHub →</a></div>`;
+    // Activity graph SVG remains untouched in case of error
   });
 })();
 
