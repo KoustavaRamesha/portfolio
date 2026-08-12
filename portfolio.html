@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>KV — Terminal Portfolio</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,10 +21,18 @@
     --text: #e0e0e0;
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
-  body { font-family: 'JetBrains Mono', monospace; color: var(--text); cursor: text; }
+  html, body { 
+    height: 100%; 
+    height: 100dvh;
+    margin: 0; 
+    overflow: hidden; 
+    background: var(--bg); 
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  body { font-family: 'JetBrains Mono', monospace; color: var(--text); }
   ::selection { background: var(--green); color: var(--bg); }
-  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--term-bg); }
   ::-webkit-scrollbar-thumb { background: var(--term-border); border-radius: 3px; }
 
@@ -36,69 +44,196 @@
   }
   .crt-vignette {
     position: fixed; inset: 0; pointer-events: none; z-index: 99;
-    box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+    box-shadow: inset 0 0 120px rgba(0,0,0,0.85);
   }
 
   /* Boot Screen */
   #bootScreen {
     position: fixed; inset: 0; z-index: 9999; background: var(--bg);
-    display: flex; align-items: center; justify-content: center; padding: 2rem;
+    display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     transition: opacity 0.5s;
+    text-align: center;
   }
   #bootScreen.fade-out { opacity: 0; pointer-events: none; }
-  .boot-line { opacity: 0; animation: fadeIn 0.3s forwards; margin-bottom: 0.5rem; }
+  .boot-line { opacity: 0; animation: fadeIn 0.3s forwards; margin-bottom: 0.5rem; font-size: 0.85rem; }
   @keyframes fadeIn { to { opacity: 1; } }
-  .boot-bar { width: 300px; height: 10px; border: 1px solid var(--term-border); margin-top: 1rem; overflow: hidden; }
+  .boot-bar { width: min(300px, 80vw); height: 10px; border: 1px solid var(--term-border); margin: 1rem auto 0; overflow: hidden; border-radius: 4px; }
   .boot-bar-fill { height: 100%; width: 0%; background: var(--green); transition: width 0.3s; box-shadow: 0 0 10px var(--green); }
 
+  /* Mobile View Switcher Tabs (shown under 1180px) */
+  .mobile-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+  }
+  .mobile-tab-btn {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    background: var(--term-bg);
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+  }
+  .mobile-tab-btn.active {
+    background: var(--term-border);
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 8px rgba(0, 255, 159, 0.15);
+  }
+  @media (min-width: 1180px) {
+    .mobile-tabs { display: none !important; }
+  }
+
   /* Terminal Layout */
-  #terminalApp { height: 100vh; padding: 1rem; position: relative; z-index: 10; }
-  .layout-grid { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; min-height: 0; }
-  .term-window { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; min-width: 0; }
-  .term-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: var(--term-border); border-radius: 8px 8px 0 0; border: 1px solid #2a2a3a; }
-  .term-dots { display: flex; gap: 0.5rem; }
-  .dot { width: 12px; height: 12px; border-radius: 50%; }
-  .term-title { font-size: 0.8rem; color: var(--text-dim); letter-spacing: 0.05em; }
+  #terminalApp { 
+    height: 100%;
+    height: 100dvh;
+    padding: 0.75rem; 
+    position: relative; 
+    z-index: 10; 
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  .layout-grid { 
+    flex: 1;
+    height: 100%; 
+    display: grid; 
+    grid-template-columns: minmax(0, 1fr); 
+    gap: 0.75rem; 
+    min-height: 0; 
+  }
+  .term-window { display: flex; flex-direction: column; gap: 0; min-height: 0; min-width: 0; flex: 1; }
+  .term-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0.6rem 0.85rem; 
+    background: var(--term-border); 
+    border-radius: 8px 8px 0 0; 
+    border: 1px solid #2a2a3a; 
+    flex-shrink: 0;
+  }
+  .term-dots { display: flex; gap: 0.4rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-title { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
   .term-body { 
-    flex: 1; background: var(--term-bg); border: 1px solid #2a2a3a; border-top: none; border-radius: 0 0 8px 8px; 
-    padding: 1.5rem; overflow-y: auto; font-size: 1rem; line-height: 1.6; position: relative; 
-    display: flex; flex-direction: column;
+    flex: 1; 
+    background: var(--term-bg); 
+    border: 1px solid #2a2a3a; 
+    border-top: none; 
+    border-radius: 0 0 8px 8px; 
+    padding: 1.25rem; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    min-height: 0;
   }
   #outputArea { flex: 1; }
   .term-line { margin-bottom: 0.5rem; white-space: pre-wrap; word-break: break-word; }
   
-  .input-area { display: flex; align-items: center; padding-top: 0.5rem; border-top: 1px solid #2a2a3a; margin-top: 1rem; }
-  .prompt { color: var(--green); margin-right: 0.5rem; white-space: nowrap; }
-  .cmd-input { background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: inherit; width: 100%; caret-color: var(--green); }
+  .input-area { 
+    display: flex; 
+    align-items: center; 
+    padding-top: 0.5rem; 
+    border-top: 1px solid #2a2a3a; 
+    margin-top: 0.75rem; 
+    flex-shrink: 0;
+  }
+  .prompt { color: var(--green); margin-right: 0.4rem; white-space: nowrap; font-size: 0.9rem; }
+  .cmd-input { 
+    background: transparent; 
+    border: none; 
+    outline: none; 
+    color: var(--text); 
+    font-family: inherit; 
+    font-size: 16px; /* Prevents iOS Safari auto-zoom */
+    width: 100%; 
+    caret-color: var(--green); 
+    padding: 0.2rem 0;
+  }
   .cmd-input:disabled { opacity: 0.5; }
   
-  /* Quick Links */
-  .quick-links { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 1rem; border-top: 1px dashed #2a2a3a; margin-top: 1rem; }
-  .q-link { padding: 0.25rem 0.5rem; border: 1px solid #2a2a3a; border-radius: 4px; font-size: 0.75rem; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
-  .q-link:hover { border-color: var(--green); color: var(--green); background: rgba(0, 255, 159, 0.1); }
+  /* Quick Links (Touch-Optimized Chips Carousel) */
+  .quick-links { 
+    display: flex; 
+    flex-wrap: nowrap; 
+    overflow-x: auto; 
+    gap: 0.4rem; 
+    padding: 0.6rem 0 0.2rem; 
+    border-top: 1px dashed #2a2a3a; 
+    margin-top: 0.75rem; 
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .quick-links::-webkit-scrollbar { display: none; }
+  
+  .q-link { 
+    padding: 0.35rem 0.65rem; 
+    border: 1px solid #2a2a3a; 
+    border-radius: 6px; 
+    font-size: 0.75rem; 
+    color: var(--text-dim); 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    white-space: nowrap;
+    user-select: none;
+    touch-action: manipulation;
+    background: rgba(31, 31, 46, 0.4);
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .q-link:active, .q-link:hover { border-color: var(--green); color: var(--green); background: rgba(0, 255, 159, 0.12); }
   .mode-hint { font-size: 0.75rem; color: var(--yellow); margin-top: 0.5rem; text-align: center; display: none; }
 
   /* Links & Components */
-  .term-link { color: var(--cyan); text-decoration: underline; cursor: pointer; margin-right: 1rem; }
+  .term-link { color: var(--cyan); text-decoration: underline; cursor: pointer; margin-right: 1rem; word-break: break-all; }
   .term-link:hover { color: var(--green); }
-  .glitch { position: relative; display: inline-block; color: var(--pink); font-weight: bold; }
-  .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; }
-  .glitch::before { animation: glitch-1 2s infinite linear alternate-reverse; color: var(--cyan); z-index: -1; }
-  .glitch::after { animation: glitch-2 3s infinite linear alternate-reverse; color: var(--green); z-index: -2; }
-  @keyframes glitch-1 { 0% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 20% { clip-path: inset(80% 0 5% 0); transform: translate(2px,0); } 40% { clip-path: inset(40% 0 40% 0); transform: translate(-1px,0); } 60% { clip-path: inset(10% 0 80% 0); transform: translate(1px,0); } 80% { clip-path: inset(60% 0 20% 0); transform: translate(-2px,0); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(2px,0); } }
-  @keyframes glitch-2 { 0% { clip-path: inset(70% 0 10% 0); transform: translate(2px,0); } 20% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 40% { clip-path: inset(60% 0 30% 0); transform: translate(1px,0); } 60% { clip-path: inset(30% 0 70% 0); transform: translate(-1px,0); } 80% { clip-path: inset(10% 0 80% 0); transform: translate(2px,0); } 100% { clip-path: inset(80% 0 5% 0); transform: translate(-2px,0); } }
 
-  .stat-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
-  .stat-bar { flex: 1; height: 8px; background: var(--term-border); border-radius: 4px; overflow: hidden; }
+  /* Responsive Profile Grid */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid #2a2a3a;
+    padding: 1.25rem;
+    background: var(--term-border);
+    border-radius: 8px;
+  }
+  @media (min-width: 640px) {
+    .about-grid { grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1.5rem; }
+  }
+
+  .stat-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .stat-label { color: var(--text-dim); width: 130px; font-size: 0.85rem; flex-shrink: 0; }
+  .stat-bar { flex: 1; min-width: 120px; height: 8px; background: var(--term-border); border-radius: 4px; overflow: hidden; }
   .stat-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); box-shadow: 0 0 5px var(--green); }
 
-  @keyframes renderIn { from { opacity: 0; transform: translateY(10px); filter: blur(3px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  @keyframes renderIn { from { opacity: 0; transform: translateY(8px); filter: blur(2px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
   .render-anim { animation: renderIn 0.3s ease forwards; }
 
   /* Optimized Grid for Full Screen */
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0; }
-  .term-card { background: var(--term-border); border: 1px solid #2a2a3a; padding: 1.25rem; border-radius: 6px; transition: all 0.3s; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem; margin: 1rem 0; }
+  .term-card { background: var(--term-border); border: 1px solid #2a2a3a; padding: 1rem; border-radius: 6px; transition: all 0.3s; }
   .term-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
   
   /* Skill Tags */
@@ -107,19 +242,19 @@
     background: rgba(255, 255, 255, 0.05); 
     border: 1px solid #2a2a3a; 
     color: var(--text); 
-    padding: 0.3rem 0.6rem; 
+    padding: 0.25rem 0.5rem; 
     border-radius: 4px; 
-    font-size: 0.85rem; 
-    margin: 0.2rem; 
+    font-size: 0.8rem; 
+    margin: 0.15rem; 
   }
 
   /* Duck Chat */
-  .chat-box { background: var(--term-border); border: 1px solid #2a2a3a; border-radius: 6px; overflow: hidden; margin: 1rem 0; display: flex; flex-direction: column; max-height: 400px; }
-  .chat-header { background: var(--term-bg); padding: 0.5rem 1rem; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .close-chat-btn { color: var(--pink); cursor: pointer; font-weight: bold; border: 1px solid var(--pink); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+  .chat-box { background: var(--term-border); border: 1px solid #2a2a3a; border-radius: 6px; overflow: hidden; margin: 0.75rem 0; display: flex; flex-direction: column; max-height: 380px; }
+  .chat-header { background: var(--term-bg); padding: 0.5rem 0.75rem; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; font-size: 0.85rem; }
+  .close-chat-btn { color: var(--pink); cursor: pointer; font-weight: bold; border: 1px solid var(--pink); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; touch-action: manipulation; }
   .close-chat-btn:hover { background: var(--pink); color: var(--bg); }
-  .chat-msgs { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-  .chat-msg { max-width: 80%; padding: 0.5rem 0.8rem; border-radius: 4px; font-size: 0.85rem; }
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; -webkit-overflow-scrolling: touch; }
+  .chat-msg { max-width: 85%; padding: 0.45rem 0.7rem; border-radius: 4px; font-size: 0.85rem; line-height: 1.45; }
   .msg-duck { background: var(--term-bg); border: 1px solid #2a2a3a; align-self: flex-start; border-left: 2px solid var(--yellow); }
   .msg-user { background: var(--green); color: var(--bg); align-self: flex-end; font-weight: bold; }
   .typing span { display: inline-block; width: 5px; height: 5px; background: var(--text-dim); border-radius: 50%; margin: 0 1px; animation: bounce 1s infinite; }
@@ -127,9 +262,9 @@
   @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
 
   /* Duck Quick Replies */
-  .quick-replies { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; border-top: 1px solid #2a2a3a; background: var(--term-bg); flex-shrink: 0; }
-  .duck-quick-btn { background: var(--term-border); border: 1px solid #2a2a3a; color: var(--text-dim); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
-  .duck-quick-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+  .quick-replies { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.6rem; border-top: 1px solid #2a2a3a; background: var(--term-bg); flex-shrink: 0; }
+  .duck-quick-btn { background: var(--term-border); border: 1px solid #2a2a3a; color: var(--text-dim); padding: 0.35rem 0.55rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; touch-action: manipulation; }
+  .duck-quick-btn:hover, .duck-quick-btn:active { border-color: var(--yellow); color: var(--yellow); }
 
   /* Mascot SVG */
   .duck-waddle { animation: waddle 1.2s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
@@ -137,33 +272,33 @@
   .duck-blink { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
   @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 
-  /* Rotating quote banner (terminal-style typewriter effect) */
-  .quote-banner { min-height: 9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 0.5rem; }
-  .quote-banner .q-line, .quote-banner .q-sub-line { display: flex; align-items: baseline; justify-content: center; }
-  .quote-banner .q-prompt { color: var(--green); margin-right: 0.5rem; font-size: 3.4rem; }
-  .quote-banner .q-main { font-size: 3.4rem; font-weight: 700; letter-spacing: 0.03em; word-break: break-word; }
-  .quote-banner .q-sub { font-size: 1.7rem; color: var(--text-dim); font-style: italic; margin-top: 0.5rem; word-break: break-word; }
-  .quote-banner .q-cursor { display: inline-block; width: 0.5em; height: 1.5rem; background: var(--green); margin-left: 3px; box-shadow: 0 0 8px var(--green); animation: cursor-blink 0.9s steps(1) infinite; flex-shrink: 0; }
-  .quote-banner .q-sub-line .q-cursor { height: 1.05rem; background: var(--text-dim); box-shadow: none; }
+  /* Quote banner */
+  .quote-banner { min-height: 7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 0.5rem; padding: 0.5rem 0; }
+  .quote-banner .q-line, .quote-banner .q-sub-line { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; }
+  .quote-banner .q-prompt { color: var(--green); margin-right: 0.3rem; font-size: 2.2rem; }
+  .quote-banner .q-main { font-size: 2.2rem; font-weight: 700; letter-spacing: 0.02em; word-break: break-word; }
+  .quote-banner .q-sub { font-size: 1.2rem; color: var(--text-dim); font-style: italic; margin-top: 0.3rem; word-break: break-word; }
+  .quote-banner .q-cursor { display: inline-block; width: 0.45em; height: 1.1rem; background: var(--green); margin-left: 3px; box-shadow: 0 0 8px var(--green); animation: cursor-blink 0.9s steps(1) infinite; flex-shrink: 0; }
+  .quote-banner .q-sub-line .q-cursor { height: 0.85rem; background: var(--text-dim); box-shadow: none; }
   @keyframes cursor-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
-  /* Bug Squasher game grid — was missing, so the game rendered unstyled */
-  .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  /* Game grid */
+  .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; touch-action: manipulation; }
   .game-hole { aspect-ratio: 1; background: #14141f; border: 1px solid #2a2a3a; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .bug { font-size: 1.8rem; line-height: 1; opacity: 0; transform: scale(0.2); transition: transform 0.15s ease, opacity 0.15s ease; }
+  .bug { font-size: 1.6rem; line-height: 1; opacity: 0; transform: scale(0.2); transition: transform 0.15s ease, opacity 0.15s ease; user-select: none; touch-action: manipulation; }
   .bug.up { opacity: 1; transform: scale(1); cursor: pointer; }
   .bug.squashed { transform: scale(1.5) rotate(20deg); opacity: 0; }
 
-  /* Respect reduced-motion preference for perf/accessibility */
+  /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .glitch::before, .glitch::after, .duck-waddle, .duck-blink, .typing span { animation: none !important; }
     .quote-banner .q-cursor { animation: none !important; opacity: 1; }
     .led { animation: none !important; opacity: 1; }
   }
 
-  /* ===== Side Panel: system schematic ===== */
+  /* ===== Side Panel ===== */
   .side-panel {
-    display: none; /* shown via media query on wide viewports */
+    display: none;
     flex-direction: column;
     background: var(--term-bg);
     border: 1px solid #2a2a3a;
@@ -172,26 +307,34 @@
     min-height: 0;
     overflow: hidden;
   }
+  .side-panel.mobile-visible {
+    display: flex !important;
+    flex: 1;
+    overflow-y: auto;
+    border-radius: 8px;
+  }
+
   .side-panel-label {
     font-size: 0.7rem; letter-spacing: 0.15em; color: var(--text-dim);
-    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-shrink: 0;
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-shrink: 0;
   }
   .side-panel-label .led { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2.4s infinite; flex-shrink: 0; }
 
   /* Profile link buttons */
   .profile-links { display: flex; flex-direction: column; gap: 0.6rem; flex-shrink: 0; }
   .side-link-btn {
-    display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem;
+    display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.85rem;
     border: 1px solid #2a2a3a; border-radius: 6px; background: var(--term-border);
     color: var(--text); text-decoration: none; font-size: 0.85rem; transition: all 0.2s;
+    touch-action: manipulation;
   }
-  .side-link-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 229, 255, 0.08); }
+  .side-link-btn:hover, .side-link-btn:active { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 229, 255, 0.08); }
   .side-link-btn-primary { border-color: var(--green); color: var(--green); font-weight: bold; }
-  .side-link-btn-primary:hover { background: rgba(0, 255, 159, 0.1); box-shadow: 0 0 10px rgba(0, 255, 159, 0.15); }
+  .side-link-btn-primary:hover, .side-link-btn-primary:active { background: rgba(0, 255, 159, 0.1); box-shadow: 0 0 10px rgba(0, 255, 159, 0.15); }
   .side-link-icon { display: inline-flex; align-items: center; justify-content: center; font-weight: bold; width: 1.4em; white-space: nowrap; text-align: center; flex-shrink: 0; font-size: 0.8rem; }
 
   /* GitHub contribution heatmap */
-  .gh-contrib-wrap { flex: 1; overflow-y: auto; min-height: 0; }
+  .gh-contrib-wrap { flex: 1; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
   .gh-contrib-loading, .gh-contrib-error { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; }
   .gh-year-block { margin-bottom: 1.1rem; }
   .gh-year-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.4rem; }
@@ -200,21 +343,23 @@
   .gh-cell { width: 4px; height: 4px; border-radius: 1px; background: #1a1a26; }
 
   @media (min-width: 1180px) {
-    .layout-grid { grid-template-columns: minmax(0, 1fr) 380px; }
-    .side-panel { display: flex; }
+    .layout-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+    .side-panel { display: flex !important; }
   }
 
-  /* Small screens */
+  /* Small screens optimization */
+  @media (max-width: 768px) {
+    .crt-overlay { display: none; } /* Better readability & performance on mobile touchscreens */
+  }
+
   @media (max-width: 640px) {
-    #terminalApp { padding: 0.5rem; }
-    .term-body { padding: 1rem; font-size: 0.9rem; }
-    .term-title:last-child { display: none; } /* hide clock, saves header space */
-    .quick-links { gap: 0.35rem; }
-    .q-link { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
-    .quote-banner .q-prompt, .quote-banner .q-main { font-size: 2rem; }
-    .quote-banner .q-sub { font-size: 1.3rem; }
-    .quote-banner .q-cursor { height: 1.1rem; }
-    .card-grid, .chat-box { margin: 0.75rem 0; }
+    #terminalApp { padding: 0.4rem; }
+    .term-body { padding: 0.85rem; font-size: 0.88rem; }
+    .term-title:last-child { display: none; }
+    .quote-banner .q-prompt, .quote-banner .q-main { font-size: 1.5rem; }
+    .quote-banner .q-sub { font-size: 0.95rem; }
+    .quote-banner .q-cursor { height: 0.95rem; }
+    .card-grid { grid-template-columns: 1fr; gap: 0.75rem; }
   }
 </style>
 </head>
@@ -228,12 +373,22 @@
   <div>
     <div id="bootText" style="min-height: 150px;"></div>
     <div class="boot-bar"><div class="boot-bar-fill" id="bootBar"></div></div>
-    <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 1rem;">PRESS ANY KEY TO SKIP</div>
+    <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 1rem;">PRESS ANY KEY OR TAP TO SKIP</div>
   </div>
 </div>
 
 <!-- Terminal App -->
 <div id="terminalApp">
+  <!-- Mobile Tab Switcher (Visible < 1180px) -->
+  <div class="mobile-tabs" id="mobileTabs">
+    <button class="mobile-tab-btn active" id="tabTermBtn">
+      <span>💻</span> Terminal
+    </button>
+    <button class="mobile-tab-btn" id="tabProfileBtn">
+      <span>👤</span> Profile & Activity
+    </button>
+  </div>
+
   <div class="layout-grid">
     <div class="term-window">
       <div class="term-header">
@@ -263,6 +418,7 @@
           <span class="q-link" data-cmd="experience">experience</span>
           <span class="q-link" data-cmd="achievements">achievements</span>
           <span class="q-link" data-cmd="duck">duck</span>
+          <span class="q-link" data-cmd="game">game</span>
           <span class="q-link" data-cmd="contact">contact</span>
           <span class="q-link" data-cmd="clear">clear</span>
         </div>
@@ -320,6 +476,28 @@ let isProcessing = false;
 let isDuckMode = false;
 let isGameMode = false;
 
+// Mobile Navigation Switcher
+const tabTermBtn = document.getElementById('tabTermBtn');
+const tabProfileBtn = document.getElementById('tabProfileBtn');
+const termWindow = document.querySelector('.term-window');
+const sidePanel = document.getElementById('sidePanel');
+
+if (tabTermBtn && tabProfileBtn) {
+  tabTermBtn.addEventListener('click', () => {
+    tabTermBtn.classList.add('active');
+    tabProfileBtn.classList.remove('active');
+    termWindow.style.display = 'flex';
+    sidePanel.classList.remove('mobile-visible');
+  });
+
+  tabProfileBtn.addEventListener('click', () => {
+    tabProfileBtn.classList.add('active');
+    tabTermBtn.classList.remove('active');
+    termWindow.style.display = 'none';
+    sidePanel.classList.add('mobile-visible');
+  });
+}
+
 // ===== INIT =====
 function startBoot() {
   let i = 0;
@@ -352,8 +530,10 @@ function skipBoot() {
     exitBoot();
   }
   document.removeEventListener('keydown', skipBoot);
+  document.removeEventListener('touchstart', skipBoot);
 }
 document.addEventListener('keydown', skipBoot);
+document.addEventListener('touchstart', skipBoot);
 
 startBoot();
 
@@ -364,7 +544,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// Side panel: live GitHub contribution graph (last 3 years), fetched client-side
+// Side panel: live GitHub contribution graph
 (function () {
   const container = document.getElementById('ghContributions');
   if (!container) return;
@@ -425,7 +605,6 @@ updateClock();
     container.innerHTML = `<div class="gh-contrib-error">Couldn't load live contribution data. <a href="https://github.com/${username}" target="_blank" rel="noopener" class="term-link" style="margin:0;">View on GitHub →</a></div>`;
   });
 })();
-
 
 const quotes = [
   { text: "PER ASPERA AD ASTRA", translation: "Through hardships to the stars." },
@@ -507,9 +686,11 @@ async function initTerminal() {
   await printLine("");
   await printLine("Koustava Ramesha — Full Stack Software Engineer", 'var(--green)');
   await printLine("Specializing in MERN, WebRTC, and AI-driven automation.", 'var(--green)');
-  await printLine("Type 'help' or click a command below to begin.", 'var(--text-dim)');
+  await printLine("Type 'help' or tap a command below to begin.", 'var(--text-dim)');
   await printLine("");
-  cmdInput.focus();
+  if (!window.matchMedia('(pointer: coarse)').matches) {
+    cmdInput.focus();
+  }
 }
 
 // ===== TERMINAL PRINTING LOGIC =====
@@ -628,7 +809,6 @@ async function executeCommand(cmd) {
       await fakeLoading("> Connecting to Mr. Quackers", 350, initDuckChat);
       isProcessing = false;
       cmdInput.disabled = false;
-      cmdInput.focus();
       return; 
     case 'contact':
       await showContact();
@@ -653,7 +833,6 @@ async function executeCommand(cmd) {
   if (!isDuckMode) {
     isProcessing = false;
     cmdInput.disabled = false;
-    cmdInput.focus();
   }
 }
 
@@ -665,7 +844,6 @@ function exitDuckMode() {
   modeHint.style.display = 'none';
   promptText.innerHTML = `<span style="color: var(--green)">guest@kv-portfolio</span>:<span style="color: var(--cyan)">~$</span>`;
   printLine("Session closed. Returning to main terminal.", 'var(--cyan)', false);
-  cmdInput.focus();
 }
 
 // ===== COMMAND OUTPUTS =====
@@ -685,15 +863,14 @@ async function showHelp() {
 
 async function showAbout() {
   const grid = document.createElement('div');
-  grid.className = 'render-anim';
-  grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; border: 1px solid #2a2a3a; padding: 1.5rem; background: var(--term-border); border-radius: 8px;';
+  grid.className = 'about-grid render-anim';
   outputArea.appendChild(grid);
 
   const leftCol = document.createElement('div');
   grid.appendChild(leftCol);
 
   const header = document.createElement('div');
-  header.style.cssText = 'color: var(--cyan); border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; margin-bottom: 1rem;';
+  header.style.cssText = 'color: var(--cyan); border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; margin-bottom: 1rem; font-weight: bold;';
   leftCol.appendChild(header);
   await typeText(header, "PROFILE_DATA", 4);
 
@@ -716,14 +893,14 @@ async function showAbout() {
   }
 
   const bio = document.createElement('div');
-  bio.style.cssText = 'margin-top: 1rem; color: var(--text-dim); font-size: 0.95rem; line-height: 1.5;';
+  bio.style.cssText = 'margin-top: 1rem; color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
   leftCol.appendChild(bio);
   await typeText(bio, "Full Stack Software Engineer specializing in the MERN stack, TypeScript, and Next.js. Experienced in designing scalable RESTful APIs, real-time WebRTC architectures, and AI-driven automation pipelines using LLMs and Computer Vision.", 1);
 
   const rightCol = document.createElement('div');
   rightCol.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center;';
   rightCol.innerHTML = `
-    <svg viewBox="0 0 300 220" width="180" height="180">
+    <svg viewBox="0 0 300 220" width="160" height="160">
       <ellipse cx="40" cy="160" rx="15" ry="10" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.4s;"/>
       <ellipse cx="85" cy="175" rx="18" ry="12" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.2s;"/>
       <ellipse cx="210" cy="180" rx="20" ry="14" fill="#ffd23f" stroke="#fff8e7" stroke-width="1" class="duck-waddle" style="animation-delay: 0.1s;"/>
@@ -757,7 +934,7 @@ async function showAbout() {
   for (const stat of stats) {
     const row = document.createElement('div');
     row.className = 'stat-row';
-    row.innerHTML = `<span style="color: var(--text-dim); width: 150px;">${stat.label}</span>`;
+    row.innerHTML = `<span class="stat-label">${stat.label}</span>`;
     const bar = document.createElement('div');
     bar.className = 'stat-bar';
     const fill = document.createElement('div');
@@ -770,7 +947,7 @@ async function showAbout() {
     
     await new Promise(r => setTimeout(r, 100));
     fill.style.width = stat.width;
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
   }
 }
 
@@ -795,12 +972,12 @@ async function showSkills() {
     grid.appendChild(card);
     
     const title = document.createElement('div');
-    title.style.cssText = `color: ${s.color}; margin-bottom: 0.75rem; font-weight: bold; font-size: 1.1rem;`;
+    title.style.cssText = `color: ${s.color}; margin-bottom: 0.75rem; font-weight: bold; font-size: 1.05rem;`;
     card.appendChild(title);
     await typeText(title, `[${s.cat}]`, 4);
 
     const listWrap = document.createElement('div');
-    listWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;';
+    listWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1rem;';
     card.appendChild(listWrap);
 
     const items = s.list.split(', ');
@@ -809,7 +986,7 @@ async function showSkills() {
       tag.className = 'skill-tag';
       listWrap.appendChild(tag);
       await typeText(tag, item, 6);
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 40));
     }
 
     const barWrap = document.createElement('div');
@@ -822,9 +999,9 @@ async function showSkills() {
     barWrap.appendChild(fill);
     card.appendChild(barWrap);
     
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 80));
     fill.style.width = s.width;
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 150));
   }
 }
 
@@ -866,7 +1043,7 @@ async function showProjects() {
     grid.appendChild(card);
 
     const name = document.createElement('div');
-    name.style.cssText = 'color: var(--text); font-weight: bold; font-size: 1.1rem; margin-bottom: 0.5rem;';
+    name.style.cssText = 'color: var(--text); font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem;';
     card.appendChild(name);
     await typeText(name, p.name, 2);
 
@@ -876,7 +1053,7 @@ async function showProjects() {
     await typeText(tags, p.tags, 1);
 
     const desc = document.createElement('div');
-    desc.style.cssText = 'font-size: 0.9rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.5;';
+    desc.style.cssText = 'font-size: 0.88rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.5;';
     card.appendChild(desc);
     await typeText(desc, p.desc, 1);
     
@@ -890,7 +1067,7 @@ async function showProjects() {
     }
     card.appendChild(links);
     
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 150));
   }
 }
 
@@ -898,7 +1075,7 @@ async function showExperience() {
   await printLine("CAREER_TIMELINE:", 'var(--cyan)');
   const timeline = document.createElement('div');
   timeline.className = 'render-anim';
-  timeline.style.cssText = 'border-left: 2px solid var(--green); padding-left: 1.5rem; margin: 1rem 0;';
+  timeline.style.cssText = 'border-left: 2px solid var(--green); padding-left: 1.25rem; margin: 1rem 0;';
   outputArea.appendChild(timeline);
 
   const jobs = [
@@ -909,7 +1086,7 @@ async function showExperience() {
     const item = document.createElement('div');
     item.style.marginBottom = '1.5rem';
     item.style.position = 'relative';
-    item.innerHTML = `<div style="position: absolute; left: -1.6rem; top: 0.2rem; width: 10px; height: 10px; background: ${j.color}; border-radius: 50%; box-shadow: 0 0 10px ${j.color};"></div>`;
+    item.innerHTML = `<div style="position: absolute; left: -1.4rem; top: 0.2rem; width: 10px; height: 10px; background: ${j.color}; border-radius: 50%; box-shadow: 0 0 10px ${j.color};"></div>`;
     timeline.appendChild(item);
 
     const dateEl = document.createElement('div');
@@ -923,11 +1100,11 @@ async function showExperience() {
     await typeText(titleEl, j.title, 2);
 
     const descEl = document.createElement('div');
-    descEl.style.cssText = 'color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
+    descEl.style.cssText = 'color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;';
     item.appendChild(descEl);
     await typeText(descEl, j.desc, 1);
     
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 150));
   }
 }
 
@@ -935,12 +1112,11 @@ async function showAchievements() {
   await printLine("ACHIEVEMENTS_LOG:", 'var(--cyan)');
   const box = document.createElement('div');
   box.className = 'render-anim';
-  box.style.cssText = 'border: 1px solid var(--yellow); padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
-  box.innerHTML = `<div style="position: absolute; left: -1.6rem; top: 0.2rem; width: 10px; height: 10px; background: var(--yellow); border-radius: 50%; box-shadow: 0 0 10px var(--yellow);"></div>`;
+  box.style.cssText = 'border: 1px solid var(--yellow); padding: 1.25rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
   outputArea.appendChild(box);
 
   const title = document.createElement('div');
-  title.style.cssText = 'color: var(--yellow); font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;';
+  title.style.cssText = 'color: var(--yellow); font-weight: bold; margin-bottom: 0.5rem; font-size: 1.05rem;';
   box.appendChild(title);
   await typeText(title, "Top 10 Finalist - Hack-to-Hire National Hackathon", 2);
 
@@ -950,7 +1126,7 @@ async function showAchievements() {
   await typeText(org, "TRIKAYA x BeetleX", 4);
 
   const desc = document.createElement('div');
-  desc.style.cssText = 'color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
+  desc.style.cssText = 'color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;';
   box.appendChild(desc);
   await typeText(desc, "Ranked among the top 10 teams out of 4,000+ participating teams nationwide in a high-stakes national level hackathon.", 1);
 
@@ -964,7 +1140,7 @@ async function showContact() {
   await printLine("ESTABLISH_CONNECTION:", 'var(--green)');
   const box = document.createElement('div');
   box.className = 'render-anim';
-  box.style.cssText = 'border: 1px solid #2a2a3a; padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
+  box.style.cssText = 'border: 1px solid #2a2a3a; padding: 1.25rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;';
   outputArea.appendChild(box);
 
   const contacts = [
@@ -998,7 +1174,7 @@ function initDuckChat() {
         <span class="close-chat-btn" id="closeChatBtn">✕ CLOSE</span>
       </div>
       <div class="chat-msgs" id="chatMsgs">
-        <div class="chat-msg msg-duck">Quack! I'm Mr. Quackers, your rubber duck debugger. Tell me what's broken. (Type 'exit' or click the ✕ to close)</div>
+        <div class="chat-msg msg-duck">Quack! I'm Mr. Quackers, your rubber duck debugger. Tell me what's broken. (Type 'exit' or tap ✕ to close)</div>
       </div>
       <div class="quick-replies" id="quickReplies">
         <button class="duck-quick-btn" data-msg="I have a bug">I have a bug</button>
@@ -1067,16 +1243,15 @@ async function handleDuckChat(text) {
 
   isProcessing = false;
   cmdInput.disabled = false;
-  cmdInput.focus();
+  if (!window.matchMedia('(pointer: coarse)').matches) {
+    cmdInput.focus();
+  }
 }
 
 function getDuckReply(text) {
   const lower = text.toLowerCase();
-  // Greetings
   if (lower.match(/^(hi|hello|hey|quack|yo)\b/)) return "Quack! Hello there. What seems to be the problem? A bug? A bad architecture? Talk to me.";
-  // Help
   if (lower.includes('help') || lower.includes('stuck')) return "Quack. Okay, let's break it down. What is the exact behavior you're seeing vs what you expect to see?";
-  // Javascript/Typescript specific
   if (lower.includes('undefined') || lower.includes('null')) return "Ah, the classic null/undefined error. Have you checked your API response? Is your await missing? Quack.";
   if (lower.includes('react') || lower.includes('hook')) return "React hooks acting up? Check your dependency array! If it's infinite loops, that's usually the culprit. Quack.";
   if (lower.includes('api') || lower.includes('fetch')) return "API issues? Check your CORS, check your headers, and for the love of all things holy, check if you're hitting the right endpoint. Quack.";
@@ -1087,18 +1262,17 @@ function getDuckReply(text) {
   if (lower.includes('coffee') || lower.includes('tired') || lower.includes('sleep') || lower.includes('burnt') || lower.includes('burnout')) return "Quack. Sleep. Seriously. The bug will still be there tomorrow. So will the coffee. Your brain won't fix anything at 3 AM that it can't fix at 9 AM.";
   if (lower.includes('joke')) return "Why do programmers prefer dark mode? Because light attracts bugs. Quack quack.";
   if (lower.includes('thank') || lower.includes('thanks')) return "Quack! You're welcome. I'll be here all night. Just swimming in my terminal. 🦆";
-  // Fallback
   return "Quack. Hmm. Have you tried console.log? It's always console.log. Or maybe git blame. Tell me more about what the code is doing.";
 }
 
 // ===== BUG SQUASHER GAME =====
 async function initGame() {
-  await printLine("ARCADE MODE INITIALIZED. Click bugs to squash them. You have 30 seconds.", 'var(--pink)');
+  await printLine("ARCADE MODE INITIALIZED. Tap bugs to squash them. You have 30 seconds.", 'var(--pink)');
   
   const gameId = 'game-' + Date.now();
   printHTML(`
-    <div class="render-anim" style="border: 2px solid var(--pink); padding: 1.5rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;" id="${gameId}">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-family: 'Press Start 2P'; font-size: 0.8rem;">
+    <div class="render-anim" style="border: 2px solid var(--pink); padding: 1rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;" id="${gameId}">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-family: 'Press Start 2P'; font-size: 0.7rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>SCORE: <span style="color: var(--green)" id="${gameId}-score">0</span></div>
         <div>TIME: <span style="color: var(--yellow)" id="${gameId}-time">30</span></div>
         <div>BEST: <span style="color: var(--pink)" id="${gameId}-best">0</span></div>
@@ -1146,14 +1320,18 @@ async function initGame() {
     }, 800);
   }, 600);
 
-  grid.addEventListener('click', (e) => {
+  const handleSquash = (e) => {
     const bug = e.target.closest('.bug');
     if (!bug || !isPlaying || bug.classList.contains('squashed') || !bug.classList.contains('up')) return;
+    e.preventDefault();
     bug.classList.add('squashed');
     score += parseInt(bug.dataset.points);
     scoreEl.textContent = score;
     setTimeout(() => bug.classList.remove('up', 'squashed'), 400);
-  });
+  };
+
+  grid.addEventListener('click', handleSquash);
+  grid.addEventListener('touchstart', handleSquash, { passive: false });
 
   const countdown = setInterval(async () => {
     timeLeft--;
@@ -1201,7 +1379,8 @@ cmdInput.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('click', (e) => {
-  if (!e.target.classList.contains('bug') && !e.target.classList.contains('q-link') && !e.target.classList.contains('close-chat-btn') && !e.target.classList.contains('term-link') && !e.target.classList.contains('duck-quick-btn')) {
+  if (window.matchMedia('(pointer: coarse)').matches) return; // Skip auto-focusing keyboard on mobile tap
+  if (!e.target.classList.contains('bug') && !e.target.classList.contains('q-link') && !e.target.classList.contains('close-chat-btn') && !e.target.classList.contains('term-link') && !e.target.classList.contains('duck-quick-btn') && !e.target.classList.contains('mobile-tab-btn')) {
     cmdInput.focus();
   }
 });
