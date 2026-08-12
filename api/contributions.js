@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
@@ -37,19 +37,22 @@ export default async function handler(req, res) {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'portfolio-contributions-proxy',
       },
       body: JSON.stringify({ query, variables: { login: username, from, to } }),
     });
 
-    if (!resp.ok) throw new Error(`GitHub API error: ${resp.status}`);
+    if (!resp.ok) {
+      const text = await resp.text();
+      return res.status(resp.status).json({ error: `GitHub API error: ${resp.status}`, detail: text });
+    }
 
     const json = await resp.json();
-    if (json.errors) throw new Error(json.errors[0].message);
+    if (json.errors) return res.status(400).json({ error: json.errors[0].message });
 
     const calendar = json.data.user.contributionsCollection.contributionCalendar;
     const total = calendar.totalContributions;
 
-    // Flatten weeks → days, map level names to 0-4 numbers
     const levelMap = { NONE: 0, FIRST_QUARTILE: 1, SECOND_QUARTILE: 2, THIRD_QUARTILE: 3, FOURTH_QUARTILE: 4 };
     const contributions = calendar.weeks.flatMap(w =>
       w.contributionDays.map(d => ({
@@ -59,11 +62,8 @@ export default async function handler(req, res) {
       }))
     );
 
-    return res.status(200).json({
-      total: { [year]: total },
-      contributions,
-    });
+    return res.status(200).json({ total: { [year]: total }, contributions });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
-}
+};
