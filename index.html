@@ -101,7 +101,8 @@
     height: 100dvh;
     padding: 0.75rem; 
     position: relative; 
-    z-index: 10; 
+    /* z-index intentionally removed: it was creating a stacking context
+       that prevented children from exceeding the CRT overlay (z-index:100) */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -312,6 +313,55 @@
   }
   .side-panel-label .led { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2.4s infinite; flex-shrink: 0; }
 
+  /* Profile Picture */
+  .profile-pic-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+  }
+  .profile-pic-frame {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    box-shadow: 0 0 18px rgba(0, 255, 159, 0.35), 0 0 40px rgba(0, 229, 255, 0.1);
+    flex-shrink: 0;
+    animation: picGlow 3s ease-in-out infinite;
+    position: relative;
+    z-index: 101; /* Above CRT overlay (z-index:100) — works now that #terminalApp no longer creates a stacking context */
+  }
+  @keyframes picGlow {
+    0%, 100% { box-shadow: 0 0 18px rgba(0, 255, 159, 0.35), 0 0 40px rgba(0, 229, 255, 0.1); }
+    50% { box-shadow: 0 0 28px rgba(0, 255, 159, 0.6), 0 0 55px rgba(0, 229, 255, 0.2); }
+  }
+  .profile-pic-frame img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    filter: brightness(0.97) contrast(1.03);
+  }
+  .profile-pic-name {
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+    text-align: center;
+  }
+  .profile-pic-role {
+    color: var(--green);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    opacity: 0.85;
+  }
+
   /* Profile link buttons */
   .profile-links { display: flex; flex-direction: column; gap: 0.6rem; flex-shrink: 0; }
   .side-link-btn {
@@ -418,6 +468,18 @@
 
     <!-- Side panel: profile links, resume download, live GitHub contribution graph -->
     <aside class="side-panel" id="sidePanel" aria-hidden="true">
+
+      <!-- Profile Picture -->
+      <div class="profile-pic-wrap">
+        <div class="profile-pic-frame">
+          <img src="profile.jpg" alt="Koustava Ramesha" draggable="false">
+        </div>
+        <div>
+          <div class="profile-pic-name">Koustava Ramesha</div>
+          <div class="profile-pic-role">FULL STACK ENGINEER</div>
+        </div>
+      </div>
+
       <div class="side-panel-label"><span class="led"></span>PROFILE LINKS</div>
       <div class="profile-links">
         <a href="https://www.linkedin.com/in/koustava-ramesha-b86214280/" target="_blank" rel="noopener" class="side-link-btn">
