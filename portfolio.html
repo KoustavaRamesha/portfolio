@@ -713,7 +713,7 @@ updateClock();
 
   Promise.all(
     years.map(y =>
-      fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=${y}`)
+      fetch(`/api/contributions?username=${username}&y=${y}`)
         .then(r => { if (!r.ok) throw new Error('bad response'); return r.json(); })
     )
   ).then(results => {
