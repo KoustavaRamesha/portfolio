@@ -204,6 +204,42 @@
   .q-link:active, .q-link:hover { border-color: var(--green); color: var(--green); background: rgba(0, 255, 159, 0.12); }
   .mode-hint { font-size: 0.85rem; color: var(--yellow); margin-top: 0.5rem; text-align: center; display: none; }
 
+  /* EncryptButton shimmer effect */
+  .encrypt-btn {
+    position: relative;
+    overflow: hidden;
+  }
+  .encrypt-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(99, 102, 241, 0) 0%,
+      rgba(99, 102, 241, 0) 20%,
+      rgba(99, 102, 241, 0.85) 50%,
+      rgba(99, 102, 241, 0) 80%,
+      rgba(99, 102, 241, 0) 100%
+    );
+    background-size: 100% 200%;
+    background-position: 0% 150%;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 0;
+    animation: none;
+    transform: scaleX(1.25);
+  }
+  .encrypt-btn:hover::after, .encrypt-btn:focus::after {
+    opacity: 1;
+    animation: shimmerSlide 1s linear infinite alternate;
+  }
+  @keyframes shimmerSlide {
+    0%   { background-position: 0% 150%; }
+    100% { background-position: 0% -50%; }
+  }
+  .encrypt-btn > * { position: relative; z-index: 1; }
+
   /* Links & Components */
   .term-link { color: var(--cyan); text-decoration: underline; cursor: pointer; margin-right: 1rem; word-break: break-all; }
   .term-link:hover { color: var(--green); }
@@ -1491,6 +1527,83 @@ document.querySelectorAll('.q-link').forEach(link => {
     cmdInput.value = '';
   });
 });
+
+// ===== ENCRYPT-BUTTON SCRAMBLE ANIMATION =====
+const SCRAMBLE_CHARS = '!@#$%^&*():{};|,.<>/?';
+const CYCLES_PER_LETTER = 2;
+const SHUFFLE_TIME = 50;
+
+function applyScramble(el) {
+  if (el._scrambleAttached) return;
+  el._scrambleAttached = true;
+  el.classList.add('encrypt-btn');
+
+  // Store the original text node content (ignore icon child nodes)
+  const getTextNode = () => {
+    for (const node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) return node;
+    }
+    // Fallback: look for a <span> that holds the label text
+    for (const child of el.children) {
+      if (!child.classList.contains('side-link-icon') &&
+          !child.classList.contains('chat-duck-icon') &&
+          !child.classList.contains('chat-duck-icon-sm')) {
+        return child;
+      }
+    }
+    return null;
+  };
+
+  let intervalId = null;
+  let targetText = '';
+
+  const scramble = () => {
+    const node = getTextNode();
+    if (!node) return;
+    targetText = (node.nodeType === Node.TEXT_NODE ? node.textContent : node.textContent).trim();
+    let pos = 0;
+    clearInterval(intervalId);
+    intervalId = setInterval(() => {
+      const scrambled = targetText
+        .split('')
+        .map((char, i) => {
+          if (char === ' ') return ' ';
+          if (pos / CYCLES_PER_LETTER > i) return char;
+          return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+        })
+        .join('');
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = scrambled;
+      } else {
+        node.textContent = scrambled;
+      }
+      pos++;
+      if (pos >= targetText.length * CYCLES_PER_LETTER) stopScramble();
+    }, SHUFFLE_TIME);
+  };
+
+  const stopScramble = () => {
+    clearInterval(intervalId);
+    const node = getTextNode();
+    if (node && targetText) {
+      if (node.nodeType === Node.TEXT_NODE) node.textContent = targetText;
+      else node.textContent = targetText;
+    }
+  };
+
+  el.addEventListener('mouseenter', scramble);
+  el.addEventListener('mouseleave', stopScramble);
+}
+
+// Apply to quick links and side panel buttons immediately
+document.querySelectorAll('.q-link, .side-link-btn').forEach(applyScramble);
+
+// Apply to duck quick-reply buttons when duck chat is injected (MutationObserver)
+const _duckObserver = new MutationObserver(() => {
+  document.querySelectorAll('.duck-quick-btn').forEach(applyScramble);
+});
+_duckObserver.observe(document.getElementById('outputArea'), { childList: true, subtree: true });
+
 </script>
 </body>
 </html>
