@@ -758,7 +758,7 @@ async function initTerminal() {
 }
 
 // ===== TERMINAL PRINTING LOGIC =====
-async function printLine(html, color = 'var(--text)', typing = true, speed = 3) {
+async function printLine(html, color = 'var(--text)', typing = true, speed = 1) {
   const div = document.createElement('div');
   div.className = 'term-line';
   div.style.color = color;
@@ -782,7 +782,7 @@ async function printLine(html, color = 'var(--text)', typing = true, speed = 3) 
   termBody.scrollTop = termBody.scrollHeight;
 }
 
-async function typeText(element, text, speed = 4) {
+async function typeText(element, text, speed = 1) {
   for (let i = 0; i < text.length; i++) {
     if (!element.parentNode) return;
     element.textContent += text.charAt(i);
@@ -846,26 +846,26 @@ async function executeCommand(cmd) {
       await showHelp();
       break;
     case 'about':
-      await fakeLoading("> Decrypting personnel file", 400, showAbout);
+      await fakeLoading("> Decrypting personnel file", 200, showAbout);
       break;
     case 'skills':
-      await fakeLoading("> Compiling skill tree", 350, showSkills);
+      await fakeLoading("> Compiling skill tree", 180, showSkills);
       break;
     case 'projects':
-      await fakeLoading("> Fetching project database", 400, showProjects);
+      await fakeLoading("> Fetching project database", 200, showProjects);
       break;
     case 'experience':
-      await fakeLoading("> Accessing timeline logs", 350, showExperience);
+      await fakeLoading("> Accessing timeline logs", 180, showExperience);
       break;
     case 'achievements':
-      await fakeLoading("> Fetching achievement data", 350, showAchievements);
+      await fakeLoading("> Fetching achievement data", 180, showAchievements);
       break;
     case 'duck':
       isDuckMode = true;
       quickLinks.style.display = 'none';
       modeHint.style.display = 'block';
       promptText.innerHTML = `<span style="color: var(--yellow)">🦆(duck)</span>:<span style="color: var(--cyan)">~$</span>`;
-      await fakeLoading("> Connecting to Mr. Quackers", 350, initDuckChat);
+      await fakeLoading("> Connecting to Mr. Quackers", 180, initDuckChat);
       isProcessing = false;
       cmdInput.disabled = false;
       return; 
@@ -930,7 +930,7 @@ async function showAbout() {
   const header = document.createElement('div');
   header.style.cssText = 'color: var(--cyan); border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; margin-bottom: 1rem; font-weight: bold;';
   leftCol.appendChild(header);
-  await typeText(header, "PROFILE_DATA", 4);
+  await typeText(header, "PROFILE_DATA");
 
   const rows = [
     { label: "NAME:", value: "Koustava Ramesha" },
@@ -948,7 +948,7 @@ async function showAbout() {
     valEl.style.color = 'var(--text)';
     rowEl.appendChild(valEl);
     leftCol.appendChild(rowEl);
-    await typeText(valEl, row.value, 4);
+    await typeText(valEl, row.value);
   }
 
   const bio = document.createElement('div');
@@ -1095,9 +1095,9 @@ async function showAbout() {
     row.appendChild(bar);
     statsBox.appendChild(row);
     
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 50));
     fill.style.width = stat.width;
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 80));
   }
 }
 
@@ -1124,7 +1124,7 @@ async function showSkills() {
     const title = document.createElement('div');
     title.style.cssText = `color: ${s.color}; margin-bottom: 0.75rem; font-weight: bold; font-size: 1.05rem;`;
     card.appendChild(title);
-    await typeText(title, `[${s.cat}]`, 4);
+    await typeText(title, `[${s.cat}]`);
 
     const listWrap = document.createElement('div');
     listWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1rem;';
@@ -1135,8 +1135,8 @@ async function showSkills() {
       const tag = document.createElement('span');
       tag.className = 'skill-tag';
       listWrap.appendChild(tag);
-      await typeText(tag, item, 6);
-      await new Promise(r => setTimeout(r, 40));
+      await typeText(tag, item, 2);
+      await new Promise(r => setTimeout(r, 15));
     }
 
     const barWrap = document.createElement('div');
@@ -1149,9 +1149,9 @@ async function showSkills() {
     barWrap.appendChild(fill);
     card.appendChild(barWrap);
     
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise(r => setTimeout(r, 30));
     fill.style.width = s.width;
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 60));
   }
 }
 
@@ -1195,7 +1195,7 @@ async function showProjects() {
     const name = document.createElement('div');
     name.style.cssText = 'color: var(--text); font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem;';
     card.appendChild(name);
-    await typeText(name, p.name, 2);
+    await typeText(name, p.name);
 
     const tags = document.createElement('div');
     tags.style.cssText = 'font-size: 0.8rem; color: var(--cyan); margin-bottom: 0.75rem; font-weight: bold;';
@@ -1217,7 +1217,7 @@ async function showProjects() {
     }
     card.appendChild(links);
     
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 50));
   }
 }
 
@@ -1243,19 +1243,19 @@ async function showExperience() {
     const dateEl = document.createElement('div');
     dateEl.style.color = j.color;
     item.appendChild(dateEl);
-    await typeText(dateEl, j.date, 4);
+    await typeText(dateEl, j.date);
 
     const titleEl = document.createElement('div');
     titleEl.style.cssText = 'color: var(--text); font-weight: bold;';
     item.appendChild(titleEl);
-    await typeText(titleEl, j.title, 2);
+    await typeText(titleEl, j.title);
 
     const descEl = document.createElement('div');
     descEl.style.cssText = 'color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;';
     item.appendChild(descEl);
     await typeText(descEl, j.desc, 1);
     
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 50));
   }
 }
 
@@ -1269,12 +1269,12 @@ async function showAchievements() {
   const title = document.createElement('div');
   title.style.cssText = 'color: var(--yellow); font-weight: bold; margin-bottom: 0.5rem; font-size: 1.05rem;';
   box.appendChild(title);
-  await typeText(title, "Top 10 Finalist - Hack-to-Hire National Hackathon", 2);
+  await typeText(title, "Top 10 Finalist - Hack-to-Hire National Hackathon");
 
   const org = document.createElement('div');
   org.style.cssText = 'color: var(--cyan); margin-bottom: 0.5rem;';
   box.appendChild(org);
-  await typeText(org, "TRIKAYA x BeetleX", 4);
+  await typeText(org, "TRIKAYA x BeetleX");
 
   const desc = document.createElement('div');
   desc.style.cssText = 'color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;';
@@ -1312,7 +1312,7 @@ async function showContact() {
     valEl.style.display = 'inline';
     row.appendChild(valEl);
     box.appendChild(row);
-    await typeText(valEl, c.val, 2);
+    await typeText(valEl, c.val);
   }
 }
 
