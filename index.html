@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>KV — Terminal Portfolio</title>
+<title>Koustava Ramesha — Portfolio</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -488,7 +488,7 @@
         </div>
         <div>
           <div class="profile-pic-name">Koustava Ramesha</div>
-          <div class="profile-pic-role">FULL STACK ENGINEER</div>
+          <div class="profile-pic-role">ISE STUDENT & SOFTWARE ENGINEER</div>
         </div>
       </div>
 
@@ -748,8 +748,8 @@ async function startQuoteBanner() {
 async function initTerminal() {
   startQuoteBanner();
   await printLine("");
-  await printLine("Koustava Ramesha — Full Stack Software Engineer", 'var(--green)');
-  await printLine("Specializing in MERN, WebRTC, and AI-driven automation.", 'var(--green)');
+  await printLine("Koustava Ramesha — ISE Student & Aspiring Software Engineer", 'var(--green)');
+  await printLine("Turning ideas into full-stack apps | MERN, AI, WebRTC, Real-Time Systems.", 'var(--green)');
   await printLine("Type 'help' or tap a command below to begin.", 'var(--text-dim)');
   await printLine("");
   if (!window.matchMedia('(pointer: coarse)').matches) {
@@ -935,6 +935,7 @@ async function showAbout() {
   const rows = [
     { label: "NAME:", value: "Koustava Ramesha" },
     { label: "ROLE:", value: "Full Stack Developer | Software Engineer" },
+    { label: "EDUCATION:", value: "B.E. in ISE — RVITM, Bangalore (2027)" },
     { label: "LOCATION:", value: "Bangalore, India" },
     { label: "EMAIL:", value: "koustava.r@gmail.com" }
   ];
@@ -953,7 +954,7 @@ async function showAbout() {
   const bio = document.createElement('div');
   bio.style.cssText = 'margin-top: 1rem; color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;';
   leftCol.appendChild(bio);
-  await typeText(bio, "Full Stack Software Engineer specializing in the MERN stack, TypeScript, and Next.js. Experienced in designing scalable RESTful APIs, real-time WebRTC architectures, and AI-driven automation pipelines using LLMs and Computer Vision.", 1);
+  await typeText(bio, "Information Science & Engineering student and aspiring software engineer who enjoys turning ideas into full-stack applications. Specializing in the MERN stack, TypeScript, and Next.js. Experienced with scalable REST APIs, real-time WebRTC architectures, AI-driven automation using LLMs & Computer Vision, and building complete software systems from architecture through deployment.", 1);
 
   const rightCol = document.createElement('div');
   rightCol.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center;';
@@ -1073,10 +1074,11 @@ async function showAbout() {
   outputArea.appendChild(statsBox);
 
   const stats = [
-    { label: "MERN STACK", width: "95%", color: "var(--cyan)" },
+    { label: "FULL STACK (MERN)", width: "95%", color: "var(--cyan)" },
     { label: "AI / ML INTEGRATION", width: "88%", color: "var(--green)" },
     { label: "SYSTEM DESIGN", width: "85%", color: "var(--yellow)" },
-    { label: "WEBRTC / REAL-TIME", width: "92%", color: "var(--pink)" }
+    { label: "WEBRTC / REAL-TIME", width: "92%", color: "var(--pink)" },
+    { label: "BACKEND ENGINEERING", width: "90%", color: "var(--cyan)" }
   ];
 
   for (const stat of stats) {
@@ -1108,8 +1110,8 @@ async function showSkills() {
   const skills = [
     { cat: "LANGUAGES", color: "var(--pink)", list: "Python, JavaScript, TypeScript, SQL", width: "95%" },
     { cat: "FRONTEND", color: "var(--cyan)", list: "React.js, Next.js, Tailwind CSS, Responsive Design", width: "95%" },
-    { cat: "BACKEND", color: "var(--green)", list: "Node.js, Express, REST APIs, WebRTC, JWT, OAuth, Microservices", width: "92%" },
-    { cat: "AI & ML", color: "var(--yellow)", list: "YOLO, ByteTrack, Google Gemini, LLM, OCR, OpenCV, Computer Vision", width: "88%" },
+    { cat: "BACKEND", color: "var(--green)", list: "Node.js, Express, REST APIs, WebRTC, JWT, OAuth, Authentication, Microservices", width: "92%" },
+    { cat: "AI & ML", color: "var(--yellow)", list: "YOLO, ByteTrack, Google Gemini, Google Genkit, LLM, OCR, OpenCV, Computer Vision", width: "88%" },
     { cat: "DATABASES", color: "var(--pink)", list: "MongoDB, MySQL, SQLite, Firebase, Firestore, Supabase", width: "90%" },
     { cat: "DEVOPS & TOOLS", color: "var(--cyan)", list: "Git, GitHub, Docker, Vercel", width: "85%" }
   ];
@@ -1163,21 +1165,21 @@ async function showProjects() {
     { 
       name: "STR Mix Digital Admin Dashboard", 
       tags: "Next.js 15, React 19, TS, Firebase, Supabase, Genkit",
-      desc: "Production-grade platform serving 1,000+ MAU. Architected real-time sync with Firebase/Supabase. Integrated Google Gemini for LLM automation, reducing manual workload by 65%. Achieved 95+ Lighthouse score.",
+      desc: "Production-oriented full-stack platform built as a freelance developer. Admin portal for managing blogs, portfolios, reviews, and business content. Integrated Google Genkit & Gemini for automated content generation and review summarization. Architected real-time sync with Firebase/Supabase.",
       live: "https://str-mix.vercel.app/", 
       github: "https://github.com/KoustavaRamesha/str-mix-admin-dashboard" 
     },
     { 
       name: "Industrial Safety AI Surveillance", 
       tags: "Python, PySide6, YOLO, ByteTrack, OpenCV, SQLite",
-      desc: "Desktop app with multi-camera YOLO detection for safety hazards. Engineered shared InferenceManager and ByteTrack tracking for stabilization. Automated incident logging with SMS alerts.",
+      desc: "Real-time multi-camera desktop application using computer vision to detect safety hazards — missing helmets, fire, smoke, and intrusions. Engineered shared InferenceManager, ByteTrack object tracking, detection stabilization, incident logging, evidence capture, and automated SMS alerts.",
       live: null, 
       github: "https://github.com/KoustavaRamesha/surveillance-system" 
     },
     { 
-      name: "Aether – Decentralized P2P Chat", 
+      name: "Aether — Decentralized P2P Chat", 
       tags: "React, TypeScript, Node.js, WebRTC",
-      desc: "E2E encrypted P2P messaging app. Built Node.js signaling server for 100+ concurrent connections. Engineered AES-256 encryption, achieving <50ms messaging latency via WebRTC.",
+      desc: "Peer-to-peer messaging application focused on real-time communication, client-side encryption, and low-latency messaging. Built Node.js signaling server and engineered AES-256 E2E encryption via WebRTC data channels.",
       live: "https://aether-woad-three.vercel.app/", 
       github: "https://github.com/KoustavaRamesha/aether" 
     }
@@ -1227,7 +1229,8 @@ async function showExperience() {
   outputArea.appendChild(timeline);
 
   const jobs = [
-    { date: "FREELANCE", color: "var(--green)", title: "Full Stack Developer @ STR Mix Digital", desc: "Engineered Next.js 15 platform handling 1,000+ monthly visits. Architected synchronization pipelines with Firebase & Supabase sustaining 99.9% uptime. Integrated Google Genkit for LLM-powered automation." }
+    { date: "2024 — PRESENT", color: "var(--green)", title: "B.E. in Information Science & Engineering @ RVITM, Bangalore", desc: "Studying data structures, algorithms, OOP, databases, software engineering, computer networks, and system design. Focused on combining academic foundations with hands-on full-stack development." },
+    { date: "FREELANCE", color: "var(--cyan)", title: "Full Stack Developer @ STR Mix Digital", desc: "Engineered production Next.js 15 platform with Firebase & Supabase synchronization. Integrated Google Genkit for LLM-powered content automation. Built admin portal for blogs, portfolios, reviews, and business content management." }
   ];
 
   for (const j of jobs) {
@@ -1276,7 +1279,7 @@ async function showAchievements() {
   const desc = document.createElement('div');
   desc.style.cssText = 'color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;';
   box.appendChild(desc);
-  await typeText(desc, "Ranked among the top 10 teams out of 4,000+ participating teams nationwide in a high-stakes national level hackathon.", 1);
+  await typeText(desc, "Selected among the top 10 teams out of 4,000+ participating teams nationwide. Strengthened ability to work under time constraints, collaborate with a team, rapidly develop solutions, and communicate technical ideas effectively.", 1);
 
   const link = document.createElement('div');
   link.style.marginTop = '0.75rem';
