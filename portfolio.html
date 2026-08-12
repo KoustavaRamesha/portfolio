@@ -272,23 +272,49 @@
   .duck-quick-btn { background: var(--term-border); border: 1px solid #2a2a3a; color: var(--text-dim); padding: 0.35rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.78rem; transition: all 0.2s; touch-action: manipulation; }
   .duck-quick-btn:hover, .duck-quick-btn:active { border-color: var(--yellow); color: var(--yellow); background: rgba(255, 210, 63, 0.1); }
 
-  /* Mascot SVG */
+  /* Mascot ASCII Duck (Matches CRT monitor art) */
+  .ascii-duck-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #06060a;
+    border: 1px solid #2a2a3e;
+    border-radius: 8px;
+    padding: 0.85rem 1rem 0.65rem;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 0 15px rgba(255, 210, 63, 0.12);
+    position: relative;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .ascii-duck {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.60rem;
+    line-height: 1.12;
+    font-weight: 700;
+    color: #ffd23f;
+    text-shadow: 0 0 6px rgba(255, 210, 63, 0.75), 0 0 14px rgba(255, 210, 63, 0.4);
+    margin: 0;
+    white-space: pre;
+    user-select: none;
+    animation: duckFloat 3s ease-in-out infinite;
+  }
+  .ascii-duck-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--yellow);
+    margin-top: 0.65rem;
+    letter-spacing: 0.06em;
+    font-weight: bold;
+    text-shadow: 0 0 6px rgba(255, 210, 63, 0.6);
+  }
+
   .duck-float { animation: duckFloat 2.8s ease-in-out infinite; transform-box: fill-box; }
   @keyframes duckFloat {
-    0%, 100% { transform: translateY(0px) rotate(-1deg); }
-    40%       { transform: translateY(-9px) rotate(1.5deg); }
-    70%       { transform: translateY(-5px) rotate(-0.5deg); }
+    0%, 100% { transform: translateY(0px) rotate(-0.5deg); }
+    40%       { transform: translateY(-7px) rotate(1deg); }
+    70%       { transform: translateY(-3px) rotate(-0.3deg); }
   }
-  .duck-tail-anim { animation: duckTail 1.6s ease-in-out infinite; transform-origin: 10% 50%; transform-box: fill-box; }
-  @keyframes duckTail { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(18deg); } }
-  .duck-wing-anim { animation: duckWing 2.8s ease-in-out infinite; transform-origin: 90% 50%; transform-box: fill-box; }
-  @keyframes duckWing { 0%, 100% { transform: scaleY(1) rotate(0deg); } 50% { transform: scaleY(0.82) rotate(-6deg); } }
-  .duck-blink { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
-  @keyframes blink { 0%, 88%, 100% { transform: scaleY(1); } 93% { transform: scaleY(0.08); } }
-  .duck-ripple { animation: ripple 2.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
-  @keyframes ripple { 0%, 100% { transform: scaleX(1); opacity: 0.5; } 50% { transform: scaleX(1.18); opacity: 0.85; } }
-  .duck-waddle { animation: waddle 1.2s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
-  @keyframes waddle { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
 
   /* Quote banner */
   .quote-banner { min-height: 7.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 0.5rem; padding: 0.5rem 0; }
@@ -965,111 +991,31 @@ async function showAbout() {
   const rightCol = document.createElement('div');
   rightCol.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center;';
   rightCol.innerHTML = `
-    <svg viewBox="0 0 200 210" width="170" height="170" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="dkBodyG" cx="40%" cy="35%" r="60%">
-          <stop offset="0%" stop-color="#ffe566"/>
-          <stop offset="100%" stop-color="#f5a200"/>
-        </radialGradient>
-        <radialGradient id="dkHeadG" cx="38%" cy="32%" r="58%">
-          <stop offset="0%" stop-color="#ffea70"/>
-          <stop offset="100%" stop-color="#f0a000"/>
-        </radialGradient>
-        <radialGradient id="dkBellyG" cx="50%" cy="40%" r="55%">
-          <stop offset="0%" stop-color="#fffde0"/>
-          <stop offset="100%" stop-color="#ffeaa0"/>
-        </radialGradient>
-        <radialGradient id="dkBeakG" cx="30%" cy="30%" r="60%">
-          <stop offset="0%" stop-color="#ffb830"/>
-          <stop offset="100%" stop-color="#d96e00"/>
-        </radialGradient>
-        <filter id="dkGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-
-      <!-- Water ripples -->
-      <ellipse cx="100" cy="188" rx="58" ry="10" fill="rgba(0,229,255,0.10)" stroke="rgba(0,229,255,0.30)" stroke-width="1" class="duck-ripple"/>
-      <ellipse cx="100" cy="188" rx="42" ry="7" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1" class="duck-ripple" style="animation-delay:0.5s"/>
-
-      <!-- All duck parts float together -->
-      <g class="duck-float">
-
-        <!-- Tail feathers -->
-        <g class="duck-tail-anim">
-          <path d="M 152 128 C 172 108 178 122 168 136 C 162 143 150 140 152 128 Z"
-                fill="#ffd23f" stroke="#e8960a" stroke-width="1.2"/>
-          <path d="M 155 124 C 173 106 177 118 167 130"
-                fill="none" stroke="#f5c518" stroke-width="1" opacity="0.6"/>
-        </g>
-
-        <!-- Body -->
-        <ellipse cx="100" cy="152" rx="54" ry="40"
-                 fill="url(#dkBodyG)" stroke="#d98c00" stroke-width="1.5"/>
-
-        <!-- Belly highlight -->
-        <ellipse cx="93" cy="158" rx="32" ry="24"
-                 fill="url(#dkBellyG)" opacity="0.55"/>
-
-        <!-- Body sheen -->
-        <ellipse cx="72" cy="132" rx="14" ry="7"
-                 fill="rgba(255,255,255,0.22)" transform="rotate(-30,72,132)"/>
-
-        <!-- Wing -->
-        <g class="duck-wing-anim">
-          <ellipse cx="80" cy="152" rx="36" ry="20"
-                   fill="#f5c200" stroke="#d98c00" stroke-width="1.2"
-                   transform="rotate(-12,80,152)"/>
-          <!-- Wing feather lines -->
-          <path d="M 52 155 C 60 163 76 166 90 160" fill="none" stroke="#d98c00" stroke-width="0.9" opacity="0.5"/>
-          <path d="M 56 149 C 63 156 78 158 90 153" fill="none" stroke="#d98c00" stroke-width="0.9" opacity="0.4"/>
-        </g>
-
-        <!-- Neck -->
-        <ellipse cx="122" cy="122" rx="19" ry="24"
-                 fill="url(#dkBodyG)" stroke="#d98c00" stroke-width="1"/>
-
-        <!-- Head -->
-        <circle cx="122" cy="96" r="30"
-                fill="url(#dkHeadG)" stroke="#d98c00" stroke-width="1.5"/>
-
-        <!-- Head sheen -->
-        <ellipse cx="112" cy="83" rx="9" ry="5.5"
-                 fill="rgba(255,255,255,0.30)" transform="rotate(-25,112,83)"/>
-
-        <!-- Beak (flat rubber duck bill) -->
-        <ellipse cx="158" cy="98" rx="18" ry="11"
-                 fill="url(#dkBeakG)" stroke="#b85e00" stroke-width="1.2"/>
-        <!-- Lower jaw -->
-        <ellipse cx="157" cy="104" rx="14" ry="6"
-                 fill="#d06000" stroke="#b85e00" stroke-width="1"/>
-        <!-- Mouth line -->
-        <path d="M 143 100 Q 158 103 173 99"
-              fill="none" stroke="#904000" stroke-width="1" opacity="0.6"/>
-        <!-- Nostrils -->
-        <circle cx="160" cy="95" r="1.5" fill="#904000" opacity="0.45"/>
-        <circle cx="155" cy="95" r="1.3" fill="#904000" opacity="0.35"/>
-
-        <!-- Eye white -->
-        <circle cx="133" cy="88" r="9" fill="white" filter="url(#dkGlow)"/>
-        <!-- Eye pupil -->
-        <circle cx="134" cy="88" r="6" fill="#0d0d1a" class="duck-blink"/>
-        <!-- Eye highlight -->
-        <circle cx="137" cy="85" r="2.5" fill="white"/>
-        <circle cx="138" cy="84" r="1.2" fill="rgba(255,255,255,0.7)"/>
-
-        <!-- Eyebrow -->
-        <path d="M 125 80 C 130 76 137 77 141 80"
-              fill="none" stroke="#c07800" stroke-width="1.8" stroke-linecap="round"/>
-
-        <!-- Cheek blush -->
-        <ellipse cx="118" cy="100" rx="7" ry="4"
-                 fill="rgba(255,140,80,0.22)" transform="rotate(-10,118,100)"/>
-
-      </g>
-    </svg>
-    <div style="color: var(--green); margin-top: 0.3rem; font-size: 0.8rem; letter-spacing:0.05em;">I LIKE DUCKS</div>
+    <div class="ascii-duck-container">
+      <pre class="ascii-duck">
+       _..._
+     /  _   \\
+    |  (#    |
+  .-'---'    /
+ /  .-.    /'
+(  (   '--'
+ \\  '--'   |
+  \\       /
+   (####)!
+  (|###!||\\#######!!..          ,/)
+ (#!###\\ \\/i            ...--.,(#) ,!
+(##\\#\\///               #\\ (,'/)
+(, \\#\\####!           .,,\\/|/
+(,) \\ #\\##!(       ,,,,)\\/#!  /)
+ (,) ,\\\\\\|||(,,,,,,,) \\/||#! ,)
+   (,)) ,|#################(,,,)
+       \`,,,)|\\###########
+           (,####)
+            )|  )!
+       ,,,,,//  ||
+          /#####/</pre>
+      <div class="ascii-duck-status">DUCK OS v1.0 [READY]</div>
+    </div>
   `;
   grid.appendChild(rightCol);
 
