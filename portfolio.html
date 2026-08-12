@@ -330,6 +330,8 @@
     box-shadow: 0 0 18px rgba(0, 255, 159, 0.35), 0 0 40px rgba(0, 229, 255, 0.1);
     flex-shrink: 0;
     animation: picGlow 3s ease-in-out infinite;
+    position: relative;
+    z-index: 101; /* Render above CRT overlay (z-index: 100) */
   }
   @keyframes picGlow {
     0%, 100% { box-shadow: 0 0 18px rgba(0, 255, 159, 0.35), 0 0 40px rgba(0, 229, 255, 0.1); }
