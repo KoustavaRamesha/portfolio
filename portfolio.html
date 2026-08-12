@@ -1436,73 +1436,88 @@ function getDuckReply(text) {
   const lower = text.toLowerCase();
 
   // Greetings
-  if (lower.match(/^(hi|hello|hey|quack|yo|greetings)\b/)) {
-    return "Quack! Hello there. What seems to be the issue? A bug? Architectural roadblock? Stale closure? Talk to me, line by line.";
+  if (lower.match(/^(hi|hello|hey|quack|yo|sup|greetings)\b/)) {
+    const greetings = [
+      "QUACK! *adjusts tiny yellow glasses* 🦆 Ah, a brave developer approaches! Spill the tea—what stack is exploding today?",
+      "Quack quack! *swims in circles* Welcome to my pond of wisdom! Are we fighting a rogue useEffect or a 404 monster?",
+      "QUACK! *flaps wings dramatically* I've been waiting for you! What broken code are we roasting today?"
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
   }
 
   // Who built you / Koustava
-  if (lower.includes('built') || lower.includes('koustava') || lower.includes('who are you') || lower.includes('creator')) {
-    return "Quack! I was created by Koustava Ramesha — an Information Science & Engineering student at RVITM Bangalore who loves building full-stack apps with Next.js, WebRTC, and AI!";
+  if (lower.includes('built') || lower.includes('koustava') || lower.includes('who are you') || lower.includes('creator') || lower.includes('boss')) {
+    return "QUACK! 👑 I was hand-coded by the legend himself: Koustava Ramesha! He's an Information Science student at RVITM who builds MERN apps, WebRTC channels, and AI models before breakfast!";
   }
 
   // React / Next.js
-  if (lower.includes('react') || lower.includes('hook') || lower.includes('next') || lower.includes('state')) {
-    return "Quack! React debugging checklist:\n1) Stale closure in useEffect? Add dependencies or use functional state updates.\n2) Infinite re-renders? Check object/array literals passed as prop defaults.\n3) Next.js App Router? Make sure client-side hooks like useState have 'use client' at the top!";
+  if (lower.includes('react') || lower.includes('hook') || lower.includes('next') || lower.includes('state') || lower.includes('rerender')) {
+    const reactReplies = [
+      "QUACK! *sighs in JSX* ⚛️ React acting up?\n1. Stale closures? Your useEffect dependency array is lying to you.\n2. Infinite loop? You're setting state inside the render phase. Stop it!\n3. Next.js App Router? Did you forget 'use client' at the top of your hook file? Don't make me quack twice!",
+      "Quack! ⚛️ 99% of React bugs are caused by mutating state directly instead of returning a new object! React isn't magic, it's just very picky!"
+    ];
+    return reactReplies[Math.floor(Math.random() * reactReplies.length)];
   }
 
   // Async / Promises / WebRTC
-  if (lower.includes('async') || lower.includes('promise') || lower.includes('webrtc') || lower.includes('socket')) {
-    return "Quack! Real-time & Async checklist:\n1) Forgotten `await` on a promise? `async` functions always return a Promise!\n2) WebRTC ICE failures? 90% of peer connection drops are due to missing TURN servers behind strict NATs.\n3) Always handle `.catch()` or try/catch blocks!";
+  if (lower.includes('async') || lower.includes('promise') || lower.includes('webrtc') || lower.includes('socket') || lower.includes('fetch')) {
+    return "QUACK! 🌐 Async drama? Listen closely:\n1. Forget `await`? Congratulations, you're trying to read data from a pending Promise!\n2. WebRTC connection dropping? 90% of the time it's strict NATs blocking ICE candidates — add a TURN server!\n3. Always catch your promises or suffer silent console death!";
   }
 
   // Databases & Backend
-  if (lower.includes('db') || lower.includes('database') || lower.includes('mongo') || lower.includes('sql') || lower.includes('api') || lower.includes('backend')) {
-    return "Quack! Backend & DB checklist:\n1) Check network response headers for CORS errors.\n2) Missing index on queried MongoDB/SQL columns causes slow responses.\n3) Ensure environment variables (MONGO_URI, SUPABASE_KEY) are loaded before DB init.";
+  if (lower.includes('db') || lower.includes('database') || lower.includes('mongo') || lower.includes('sql') || lower.includes('api') || lower.includes('backend') || lower.includes('cors')) {
+    return "QUACK! 🗄️ Backend trouble?\n1. CORS error? The browser's security guard is kicking your API out. Fix your `Access-Control-Allow-Origin`!\n2. Slow query? Index your MongoDB/SQL foreign keys or watch your database cry under load.\n3. Check your .env file... did you forget to load `MONGO_URI` again?";
   }
 
   // AI / YOLO / Genkit
-  if (lower.includes('ai') || lower.includes('yolo') || lower.includes('gemini') || lower.includes('genkit') || lower.includes('vision')) {
-    return "Quack! AI integration tip: Run heavy inference (YOLO/OpenCV) on dedicated background worker threads or queue servers so you don't block the UI thread!";
+  if (lower.includes('ai') || lower.includes('yolo') || lower.includes('gemini') || lower.includes('genkit') || lower.includes('vision') || lower.includes('llm')) {
+    return "QUACK! 🤖 AI magic! Fun fact: Computer Vision & LLMs are cool, but running YOLO inference on the main thread is a crime! Offload it to worker threads or background tasks so your UI stays silky smooth!";
   }
 
   // CSS / Styling
-  if (lower.includes('css') || lower.includes('flex') || lower.includes('grid') || lower.includes('overflow') || lower.includes('align')) {
-    return "Quack! CSS survival guide:\n1) Child flex item overflowing? Add `min-width: 0` to flex child!\n2) Element out of bounds? Check `box-sizing: border-box`.\n3) Z-index not working? A parent likely created a stacking context with relative/opacity/transform!";
+  if (lower.includes('css') || lower.includes('flex') || lower.includes('grid') || lower.includes('overflow') || lower.includes('align') || lower.includes('z-index')) {
+    return "QUACK! 🎨 Ah, CSS — the dark arts!\n• Flex child overflowing? Put `min-width: 0` on it!\n• Z-index ignored? A parent element created a new stacking context. RIP.\n• Center a div? `display: grid; place-items: center;` and go take a victory lap!";
   }
 
   // Git Panic
-  if (lower.includes('git') || lower.includes('merge') || lower.includes('conflict') || lower.includes('stash')) {
-    return "Quack! Deep breaths. Safe Git protocol:\n`git status` -> `git stash` -> `git pull --rebase origin main` -> `git stash pop`.\nNever force push to main unless you enjoy adrenaline spikes!";
+  if (lower.includes('git') || lower.includes('merge') || lower.includes('conflict') || lower.includes('stash') || lower.includes('push')) {
+    return "QUACK! 🚨 MERGE CONFLICT EMERGENCY! 🚨\nExecute Rubber Duck Emergency Protocol:\n`git status` ➔ `git stash` ➔ `git pull --rebase origin main` ➔ `git stash pop`.\nAnd remember: NEVER `git push --force` unless you like living on the edge!";
   }
 
   // Production outage
   if (lower.includes('production') || lower.includes('down') || lower.includes('outage') || lower.includes('deploy')) {
-    return "🔥 PRODUCTION OUTAGE PROTOCOL:\n1) Don't panic.\n2) Rollback to last stable build on Vercel/Cloud.\n3) Check application logs & status codes.\n4) Fix, test locally, then deploy with confidence. You got this! Quack.";
+    return "🔥 *SIREN QUACKS* 🔥 PRODUCTION IS DOWN?!\nStep 1: Deep breath.\nStep 2: Hit Vercel/Cloud Instant Rollback!\nStep 3: Blame network latency.\nStep 4: Check Vercel logs while sipping tea. We'll fix it!";
   }
 
   // Fatigue / Coffee / Burnout
   if (lower.includes('coffee') || lower.includes('tired') || lower.includes('sleep') || lower.includes('burnt') || lower.includes('burnout')) {
-    return "Quack ☕ Step away from the screen for 15 minutes! Your brain synthesizes bug solutions in the background when you take a walk. Rest hard, code smart.";
+    return "Quack ☕ *pats your shoulder with a wing* Listen to your feathered friend. Step away from the keyboard for 15 minutes. Your brain solves bugs in the background while you walk around. Go hydrate!";
   }
 
   // Jokes
   if (lower.includes('joke')) {
     const jokes = [
-      "Why do programmers prefer dark mode? Because light attracts bugs. Quack!",
-      "There are 10 types of people in the world: those who understand binary, and those who don't. Quack!",
-      "A SQL query walks into a bar, walks up to two tables and asks... 'Can I join you?' Quack!",
-      "Why did the JavaScript developer wear glasses? Because they couldn't C#! Quack!"
+      "QUACK! Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
+      "Quack! There are 10 types of people in the world: those who understand binary, and those who don't! 🤓",
+      "QUACK! A SQL query walks into a bar, approaches two tables, and asks: 'Can I join you?' 🍻",
+      "Quack quack! Why did the JavaScript developer wear glasses? Because they couldn't C#! 👓",
+      "QUACK! How many programmers does it take to change a lightbulb? None, that's a hardware problem! 💡"
     ];
     return jokes[Math.floor(Math.random() * jokes.length)];
   }
 
   // Thanks
-  if (lower.includes('thank') || lower.includes('thanks') || lower.includes('awesome')) {
-    return "Quack! You're very welcome! I'll be here floating in the terminal whenever you need a rubber duck. 🦆";
+  if (lower.includes('thank') || lower.includes('thanks') || lower.includes('awesome') || lower.includes('love') || lower.includes('great')) {
+    return "QUACK! *blushes in yellow* You're very welcome! I'll be right here swimming in your terminal whenever your code acts up. Keep crushing it! 🦆✨";
   }
 
   // General rubber duck debugging step
-  return "Quack! Let's break it down using the Rubber Duck Protocol:\n1) What input are you giving?\n2) What is the exact output/error?\n3) What line of code breaks your expectation?\nTell me more!";
+  const randomDefaults = [
+    "QUACK! *taps bill thoughtfully* 🦆 Explain it to me like I'm 5 years old:\n1. What did you EXPECT to happen?\n2. What ACTUALLY happened?\n3. Which line of code betrayed your trust?",
+    "Quack! *wiggles tail* Hmm, fascinating bug! Have you tried `console.log()` on every single variable yet? It's simple, but it works 90% of the time!",
+    "QUACK! *adjusts monocle* A mystery! Tell me: when was the last time this worked, and what line did you change right before it broke?"
+  ];
+  return randomDefaults[Math.floor(Math.random() * randomDefaults.length)];
 }
 
 // ===== INPUT HANDLING =====
