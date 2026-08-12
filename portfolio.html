@@ -1447,7 +1447,11 @@ function getDuckReply(text) {
 
   // Who built you / Koustava
   if (lower.includes('built') || lower.includes('koustava') || lower.includes('who are you') || lower.includes('creator') || lower.includes('boss')) {
-    return "QUACK! 👑 I was hand-coded by the legend himself: Koustava Ramesha! He's an Information Science student at RVITM who builds MERN apps, WebRTC channels, and AI models before breakfast!";
+    const creatorReplies = [
+      "Quack! 🦆 I was built by Koustava Ramesha—an Information Science student at RVITM Bangalore! He created me using vanilla JavaScript to hang out in his terminal portfolio.",
+      "Quack quack! Koustava Ramesha coded me! He's an ISE student & Full Stack Developer who enjoys building apps with MERN, Next.js, WebRTC, and AI."
+    ];
+    return creatorReplies[Math.floor(Math.random() * creatorReplies.length)];
   }
 
   // React / Next.js
