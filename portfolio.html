@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #050508;
@@ -170,26 +170,23 @@
   }
   .cmd-input:disabled { opacity: 0.5; }
   
-  /* Quick Links (Touch-Optimized Chips Carousel) */
+  /* Quick Links (Fully Wrap Multi-Row Grid for Mobile Visibility) */
   .quick-links { 
     display: flex; 
-    flex-wrap: nowrap; 
-    overflow-x: auto; 
+    flex-wrap: wrap; 
     gap: 0.4rem; 
     padding: 0.6rem 0 0.2rem; 
     border-top: 1px dashed #2a2a3a; 
     margin-top: 0.75rem; 
     flex-shrink: 0;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
   }
-  .quick-links::-webkit-scrollbar { display: none; }
   
   .q-link { 
-    padding: 0.35rem 0.65rem; 
+    flex: 1 1 auto;
+    padding: 0.4rem 0.7rem; 
     border: 1px solid #2a2a3a; 
     border-radius: 6px; 
-    font-size: 0.75rem; 
+    font-size: 0.78rem; 
     color: var(--text-dim); 
     cursor: pointer; 
     transition: all 0.2s; 
@@ -197,9 +194,11 @@
     user-select: none;
     touch-action: manipulation;
     background: rgba(31, 31, 46, 0.4);
-    min-height: 32px;
+    min-height: 34px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   .q-link:active, .q-link:hover { border-color: var(--green); color: var(--green); background: rgba(0, 255, 159, 0.12); }
   .mode-hint { font-size: 0.75rem; color: var(--yellow); margin-top: 0.5rem; text-align: center; display: none; }
@@ -281,13 +280,6 @@
   .quote-banner .q-cursor { display: inline-block; width: 0.45em; height: 1.1rem; background: var(--green); margin-left: 3px; box-shadow: 0 0 8px var(--green); animation: cursor-blink 0.9s steps(1) infinite; flex-shrink: 0; }
   .quote-banner .q-sub-line .q-cursor { height: 0.85rem; background: var(--text-dim); box-shadow: none; }
   @keyframes cursor-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-
-  /* Game grid */
-  .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; touch-action: manipulation; }
-  .game-hole { aspect-ratio: 1; background: #14141f; border: 1px solid #2a2a3a; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .bug { font-size: 1.6rem; line-height: 1; opacity: 0; transform: scale(0.2); transition: transform 0.15s ease, opacity 0.15s ease; user-select: none; touch-action: manipulation; }
-  .bug.up { opacity: 1; transform: scale(1); cursor: pointer; }
-  .bug.squashed { transform: scale(1.5) rotate(20deg); opacity: 0; }
 
   /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce) {
@@ -418,7 +410,6 @@
           <span class="q-link" data-cmd="experience">experience</span>
           <span class="q-link" data-cmd="achievements">achievements</span>
           <span class="q-link" data-cmd="duck">duck</span>
-          <span class="q-link" data-cmd="game">game</span>
           <span class="q-link" data-cmd="contact">contact</span>
           <span class="q-link" data-cmd="clear">clear</span>
         </div>
@@ -474,7 +465,6 @@ let history = [];
 let historyIdx = 0;
 let isProcessing = false;
 let isDuckMode = false;
-let isGameMode = false;
 
 // Mobile Navigation Switcher
 const tabTermBtn = document.getElementById('tabTermBtn');
@@ -796,11 +786,6 @@ async function executeCommand(cmd) {
     case 'achievements':
       await fakeLoading("> Fetching achievement data", 350, showAchievements);
       break;
-    case 'game':
-      isGameMode = true;
-      await fakeLoading("> Initializing Bug Squasher protocol", 500, initGame);
-      isGameMode = false;
-      break;
     case 'duck':
       isDuckMode = true;
       quickLinks.style.display = 'none';
@@ -822,7 +807,7 @@ async function executeCommand(cmd) {
       await printLine("User is not in the sudoers file. This incident will be reported. 🚨", 'var(--pink)');
       break;
     case 'ls':
-      await printLine("about  skills  projects  experience  achievements  duck  game  contact  help  clear", 'var(--cyan)');
+      await printLine("about  skills  projects  experience  achievements  duck  contact  help  clear", 'var(--cyan)');
       break;
     case '':
       break;
@@ -855,7 +840,6 @@ async function showHelp() {
   await printLine("  projects     - Fetch completed quest logs");
   await printLine("  experience   - View career timeline");
   await printLine("  achievements - View hackathon achievements");
-  await printLine("  game         - Launch Bug Squasher arcade");
   await printLine("  duck         - Initiate rubber duck debugger");
   await printLine("  contact      - Display contact frequencies");
   await printLine("  clear        - Wipe terminal screen");
@@ -1265,95 +1249,6 @@ function getDuckReply(text) {
   return "Quack. Hmm. Have you tried console.log? It's always console.log. Or maybe git blame. Tell me more about what the code is doing.";
 }
 
-// ===== BUG SQUASHER GAME =====
-async function initGame() {
-  await printLine("ARCADE MODE INITIALIZED. Tap bugs to squash them. You have 30 seconds.", 'var(--pink)');
-  
-  const gameId = 'game-' + Date.now();
-  printHTML(`
-    <div class="render-anim" style="border: 2px solid var(--pink); padding: 1rem; background: var(--term-border); border-radius: 8px; margin: 1rem 0;" id="${gameId}">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-family: 'Press Start 2P'; font-size: 0.7rem; flex-wrap: wrap; gap: 0.5rem;">
-        <div>SCORE: <span style="color: var(--green)" id="${gameId}-score">0</span></div>
-        <div>TIME: <span style="color: var(--yellow)" id="${gameId}-time">30</span></div>
-        <div>BEST: <span style="color: var(--pink)" id="${gameId}-best">0</span></div>
-      </div>
-      <div class="game-grid" id="${gameId}-grid"></div>
-    </div>
-  `);
-
-  const grid = document.getElementById(`${gameId}-grid`);
-  const scoreEl = document.getElementById(`${gameId}-score`);
-  const timeEl = document.getElementById(`${gameId}-time`);
-  const bestEl = document.getElementById(`${gameId}-best`);
-
-  let score = 0, timeLeft = 30;
-  let isPlaying = true;
-  let bestScore = parseInt(localStorage.getItem('kitBugBest') || '0');
-  bestEl.textContent = bestScore;
-
-  const bugs = [
-    { emoji: '👾', points: 10 },
-    { emoji: '🦠', points: 20 },
-    { emoji: '💀', points: 50 }
-  ];
-
-  for (let i = 0; i < 9; i++) {
-    const hole = document.createElement('div');
-    hole.className = 'game-hole';
-    hole.innerHTML = `<div class="bug" data-hole="${i}"></div>`;
-    grid.appendChild(hole);
-  }
-
-  const spawnTimer = setInterval(() => {
-    if (!isPlaying) return;
-    const available = [...grid.querySelectorAll('.bug')].filter(b => !b.classList.contains('up') && !b.classList.contains('squashed'));
-    if (available.length === 0) return;
-    
-    const bug = available[Math.floor(Math.random() * available.length)];
-    const type = bugs[Math.floor(Math.random() * bugs.length)];
-    bug.textContent = type.emoji;
-    bug.dataset.points = type.points;
-    bug.classList.add('up');
-    
-    setTimeout(() => {
-      if (bug.classList.contains('up') && !bug.classList.contains('squashed')) bug.classList.remove('up');
-    }, 800);
-  }, 600);
-
-  const handleSquash = (e) => {
-    const bug = e.target.closest('.bug');
-    if (!bug || !isPlaying || bug.classList.contains('squashed') || !bug.classList.contains('up')) return;
-    e.preventDefault();
-    bug.classList.add('squashed');
-    score += parseInt(bug.dataset.points);
-    scoreEl.textContent = score;
-    setTimeout(() => bug.classList.remove('up', 'squashed'), 400);
-  };
-
-  grid.addEventListener('click', handleSquash);
-  grid.addEventListener('touchstart', handleSquash, { passive: false });
-
-  const countdown = setInterval(async () => {
-    timeLeft--;
-    timeEl.textContent = timeLeft;
-    if (timeLeft <= 0) {
-      isPlaying = false;
-      clearInterval(spawnTimer);
-      clearInterval(countdown);
-      grid.querySelectorAll('.bug').forEach(b => b.classList.remove('up', 'squashed'));
-      
-      if (score > bestScore) {
-        bestScore = score;
-        localStorage.setItem('kitBugBest', bestScore);
-        bestEl.textContent = bestScore;
-        await printLine("🏆 NEW HIGH SCORE!", 'var(--green)');
-      }
-      
-      await printLine("SYSTEM CRASH. Game over. Type 'game' to play again.", 'var(--pink)');
-    }
-  }, 1000);
-}
-
 // ===== INPUT HANDLING =====
 cmdInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
@@ -1380,7 +1275,7 @@ cmdInput.addEventListener('keydown', (e) => {
 
 document.addEventListener('click', (e) => {
   if (window.matchMedia('(pointer: coarse)').matches) return; // Skip auto-focusing keyboard on mobile tap
-  if (!e.target.classList.contains('bug') && !e.target.classList.contains('q-link') && !e.target.classList.contains('close-chat-btn') && !e.target.classList.contains('term-link') && !e.target.classList.contains('duck-quick-btn') && !e.target.classList.contains('mobile-tab-btn')) {
+  if (!e.target.classList.contains('q-link') && !e.target.classList.contains('close-chat-btn') && !e.target.classList.contains('term-link') && !e.target.classList.contains('duck-quick-btn') && !e.target.classList.contains('mobile-tab-btn')) {
     cmdInput.focus();
   }
 });
