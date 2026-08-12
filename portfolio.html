@@ -1031,14 +1031,18 @@ async function showAbout() {
         <ellipse cx="112" cy="83" rx="9" ry="5.5"
                  fill="rgba(255,255,255,0.30)" transform="rotate(-25,112,83)"/>
 
-        <!-- Beak upper -->
-        <path d="M 147 94 C 165 88 170 100 165 107 C 160 111 147 107 147 100 Z"
-              fill="url(#dkBeakG)" stroke="#b85e00" stroke-width="1"/>
-        <!-- Beak lower -->
-        <path d="M 147 103 C 158 106 165 110 162 116 C 158 120 147 112 147 106 Z"
-              fill="#d06000" stroke="#b85e00" stroke-width="1"/>
-        <!-- Beak nostril -->
-        <circle cx="160" cy="96" r="1.8" fill="#904000" opacity="0.55"/>
+        <!-- Beak (flat rubber duck bill) -->
+        <ellipse cx="158" cy="98" rx="18" ry="11"
+                 fill="url(#dkBeakG)" stroke="#b85e00" stroke-width="1.2"/>
+        <!-- Lower jaw -->
+        <ellipse cx="157" cy="104" rx="14" ry="6"
+                 fill="#d06000" stroke="#b85e00" stroke-width="1"/>
+        <!-- Mouth line -->
+        <path d="M 143 100 Q 158 103 173 99"
+              fill="none" stroke="#904000" stroke-width="1" opacity="0.6"/>
+        <!-- Nostrils -->
+        <circle cx="160" cy="95" r="1.5" fill="#904000" opacity="0.45"/>
+        <circle cx="155" cy="95" r="1.3" fill="#904000" opacity="0.35"/>
 
         <!-- Eye white -->
         <circle cx="133" cy="88" r="9" fill="white" filter="url(#dkGlow)"/>
