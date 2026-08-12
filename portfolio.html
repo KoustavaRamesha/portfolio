@@ -711,14 +711,19 @@ updateClock();
     return grid;
   }
 
-  Promise.all(
+  Promise.allSettled(
     years.map(y =>
       fetch(`/api/contributions?username=${username}&y=${y}`)
-        .then(r => { if (!r.ok) throw new Error('bad response'); return r.json(); })
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
     )
   ).then(results => {
+    const validResults = results.filter(r => r.status === 'fulfilled' && r.value && r.value.contributions);
+    if (!validResults.length) throw new Error('No valid contribution data returned');
+
     container.innerHTML = '';
-    results.forEach((data, i) => {
+    results.forEach((res, i) => {
+      if (res.status !== 'fulfilled' || !res.value) return;
+      const data = res.value;
       const year = years[i];
       const contributions = data.contributions || [];
       const total = (data.total && data.total[year] != null)
@@ -736,8 +741,14 @@ updateClock();
 
       container.appendChild(block);
     });
-  }).catch(() => {
-    container.innerHTML = `<div class="gh-contrib-error">Couldn't load live contribution data. <a href="https://github.com/${username}" target="_blank" rel="noopener" class="term-link" style="margin:0;">View on GitHub →</a></div>`;
+  }).catch((err) => {
+    console.warn('GitHub API fetch failed, rendering SVG chart fallback:', err);
+    container.innerHTML = `
+      <div class="gh-year-block">
+        <div class="gh-year-head"><span>Contributions</span></div>
+        <img src="https://ghchart.ssh.surf/${username}" alt="GitHub Contributions" style="width:100%; height:auto; border-radius:4px; filter: invert(0.9) hue-rotate(180deg);" />
+      </div>
+    `;
   });
 })();
 
