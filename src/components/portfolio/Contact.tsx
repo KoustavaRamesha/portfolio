@@ -92,7 +92,7 @@ export function Contact({ onReplay }: { onReplay: () => void }) {
               proximity={250}
               onClick={() => {
                 const link = document.createElement("a");
-                link.href = profile.resume || "/resume.pdf";
+                link.href = profile.resume || "https://drive.google.com/file/d/1ZGmMFQdgqrDpmX7WN4GcvolzvsILVsr6/view?usp=sharing";
                 link.target = "_blank";
                 link.rel = "noopener noreferrer";
                 document.body.appendChild(link);

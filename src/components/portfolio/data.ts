@@ -7,7 +7,7 @@ export const profile = {
   email: "koustava.r@gmail.com",
   phone: "+91 80502 69703",
   phoneHref: "tel:+918050269703",
-  resume: "/resume.pdf",
+  resume: "https://drive.google.com/file/d/1ZGmMFQdgqrDpmX7WN4GcvolzvsILVsr6/view?usp=sharing",
   photo: "/avatar-sketch.jpg",
   bio: "I build and ship cloud-hosted products end to end — React and Next.js frontends, Node.js services, and the real-time systems behind them.",
   links: {

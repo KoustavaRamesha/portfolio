@@ -98,7 +98,7 @@ export function Island({ onLogo }: { onLogo: () => void }) {
                   <a href={`mailto:${profile.email}`} className="text-xl font-semibold">{profile.email}</a>
                   <div className="mt-1 flex items-center justify-between text-xs opacity-70">
                     <span>{profile.location}</span>
-                    <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100">
+                    <a href="https://drive.google.com/file/d/1ZGmMFQdgqrDpmX7WN4GcvolzvsILVsr6/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100">
                       Résumé ↗
                     </a>
                   </div>
